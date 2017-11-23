@@ -1,0 +1,18 @@
+------- Basic steps for the project -----------
+
+1 - Implement the matrix A using the code provided last year
+2 - Implement a math module
+	- To assess the spectral radius of a matrix
+	- To multiply matrix
+	- To compute matrix/vector norms
+3 - Implement the two grid method
+4 - Implement a ui to see solutions
+5 - Implement geometric multi-grid method 
+	a - Choose what type of multi-grid use (V or W, why one instead of the other ?)
+	b - Implement the method based on the two grid method applied recursively
+		i - Code a condition checking how deep to go in the coarser grids : stop 		when either the matrix is 1X1 or solving the matrix is less costly than
+		applying the coarser grid transformation
+	c - Study the convergence by assessing the spectral radius
+6 - Implement a conjugate gradient method
+	a - Check convergence improvement based on the # of iterations needed to solve the 	problem compared to a mere multi-grid method
+	b - Compare those results to theoretical bounds on the # of iterations
