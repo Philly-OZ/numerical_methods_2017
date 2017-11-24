@@ -12,6 +12,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   int xNumber = m - 1; // number of points in the x direction
   int yNumber = m; // number of points in the y direction
   *problemSize = xNumber * yNumber; // number of unknowns of the problem
+  double step = L / (m - 1); // length of the discretization step
   int nnz = 5 * (*problemSize) - 2 * xNumber - 2 * yNumber; // non zero elements of the matrix A
 
   /* Allocation of memory for the sparse matrix A using CSR format and the vector b*/
@@ -21,7 +22,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   *a = malloc(nnz * sizeof(double)); // allocation of memory for the a array of the matrix A
   *b = malloc(*problemSize * sizeof(double)) // allocation of memory for the array of the vector b
 
-  /* checks whether the allocation of memory was succesful, returns an error if not */
+  /* checks whether the allocation of memory was successful, returns an error if not */
 
   if(*ia == NULL || *ja ==  NULL || *a == NULL){
     printf("\n ERROR : not enough memory to generate the problem\n\n");
@@ -33,21 +34,76 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   nnz = 0; // nnz is back to 0, because it will be used and incremented to fill the arrays
   int equationNumber; // this is the index of the point using the lexicographic numbering
 
-  for(int iy = 0; iy < yNumber, iy ++){
-    for(int ix = 0; ix < xNumber, ix ++){
+  for(int iy = 0; iy < yNumber, iy++){
+    for(int ix = 0; ix < xNumber, ix++){
       /* this loop goes through every point of the problem using the lexicographic numbering */
       equationNumber = ix + iy * xNumber;
       (*ia)[nnz] = equationNumber; // this indicates the start of a new line in the ia array
 
       /* filling the independent b array by default equal to 0 */
 
-      (*b)[ind] = 0.0;
+      (*b)[equationNumber] = 0.0;
 
       /* starts to fill in the matrix */
-      
+
+      /* south neighbour elements */
+
+      if (iy > 0 && ix == 0){
+        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        (*a)[nnz] = 0.5;
+        (*ja)[nnz] = equationNumber - xNumber;
+        nnz++;
+      } else if (iy > 0 && ix > 0){
+        // internal elements
+        (*a)[nnz] = 1.0;
+        (*ja)[nnz] = equationNumber - xNumber;
+        nnz++;
+      }
+
+      /* west neighbour elements */
+
+      if ((ix > 0 && iy == 0) || (ix > 0 && iy == yNumber - 1)){
+        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        (*a)[nnz] = 0.5;
+        (*ja)[nnz] = equationNumber - 1;
+        nnz++;
+      } else if (ix > 0 && (iy > 0 && iy < yNumber - 1)){
+        // internal elements
+        (*a)[nnz] = 1.0;
+        (*ja)[nnz] = equationNumber - 1;
+        nnz++;
+      }
+
+      /* diagonal elements */
+
+      if ((ix == 0 && iy == 0) || (ix == 0 && iy == yNumber - 1)){
+        // elements on the lower or upper west corner => Von Neumann condition : dT/dx = dT/dy = 0
+        (*a)[nnz] = -1.0;
+        (*ja)[nnz] = equationNumber;
+        nnz++;
+      } else if ((iy == 0 && ix > 0) || (iy == yNumber - 1 && ix > 0)){
+        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        (*a)[nnz] = -2.0;
+        (*ja)[nnz] = equationNumber;
+        nnz++;
+      } else if (ix == 0 && (iy > 0 && iy < yNumber - 1)){
+        // elements on the west edge => Von Neumann condition : dT/dx = 0
+        (*a)[nnz] = -2.0;
+        (*ja)[nnz] = equationNumber;
+        nnz++;
+      } else {
+        // internal elements
+        (*a)[nnz] = -4.0;
+        (*ja)[nnz] = equationNumber;
+        nnz;
+      }
+
+      /* east neighbour elements */
+
+
 
     }
   }
-
+  printf("Linear problem successfully generated\n");
   return 0;
 }
