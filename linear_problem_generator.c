@@ -13,7 +13,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   int yNumber = m; // number of points in the y direction
   *problemSize = xNumber * yNumber; // number of unknowns of the problem
   double step = L / (m - 1); // length of the discretization step
-  int nnz = 5 * (*problemSize) - 2 * xNumber - 2 * yNumber; // non zero elements of the matrix A
+  int nnz = 5 * (*problemSize) - 2 * xNumber - 2 * yNumber; // non zero element of the matrix A
 
   /* Allocation of memory for the sparse matrix A using CSR format and the vector b*/
 
@@ -46,64 +46,109 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
 
       /* starts to fill in the matrix */
 
-      /* south neighbour elements */
+      /* south neighbour element */
 
       if (iy > 0 && ix == 0){
-        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
         (*a)[nnz] = 0.5;
         (*ja)[nnz] = equationNumber - xNumber;
         nnz++;
       } else if (iy > 0 && ix > 0){
-        // internal elements
+        // internal element
         (*a)[nnz] = 1.0;
         (*ja)[nnz] = equationNumber - xNumber;
         nnz++;
       }
 
-      /* west neighbour elements */
+      /* west neighbour element */
 
       if ((ix > 0 && iy == 0) || (ix > 0 && iy == yNumber - 1)){
-        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
         (*a)[nnz] = 0.5;
         (*ja)[nnz] = equationNumber - 1;
         nnz++;
       } else if (ix > 0 && (iy > 0 && iy < yNumber - 1)){
-        // internal elements
+        // internal element
         (*a)[nnz] = 1.0;
         (*ja)[nnz] = equationNumber - 1;
         nnz++;
       }
 
-      /* diagonal elements */
+      /* diagonal element */
 
       if ((ix == 0 && iy == 0) || (ix == 0 && iy == yNumber - 1)){
-        // elements on the lower or upper west corner => Von Neumann condition : dT/dx = dT/dy = 0
+        // element on the lower or upper west corner => Von Neumann condition : dT/dx = dT/dy = 0
         (*a)[nnz] = -1.0;
         (*ja)[nnz] = equationNumber;
         nnz++;
       } else if ((iy == 0 && ix > 0) || (iy == yNumber - 1 && ix > 0)){
-        // elements on the upper or lower edge => Von Neumann condition : dT/dy = 0
+        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
         (*a)[nnz] = -2.0;
         (*ja)[nnz] = equationNumber;
         nnz++;
       } else if (ix == 0 && (iy > 0 && iy < yNumber - 1)){
-        // elements on the west edge => Von Neumann condition : dT/dx = 0
+        // element on the west edge => Von Neumann condition : dT/dx = 0
         (*a)[nnz] = -2.0;
         (*ja)[nnz] = equationNumber;
         nnz++;
       } else {
-        // internal elements
+        // internal element
         (*a)[nnz] = -4.0;
         (*ja)[nnz] = equationNumber;
         nnz;
       }
 
-      /* east neighbour elements */
+      /* east neighbour element */
 
+      if (ix < xNumber - 1){
+        // element not on the east edge
+        if (iy == 0 || iy == yNumber - 1){
+          // element on the upper or lower edge
+          (*a)[nnz] = 0.5;
+          (*ja)[nnz] = equationNumber + 1;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = 1.0;
+          (*ja)[nnz] = equationNumber + 1;
+          nnz++;
+        }
+      } else {
+        // element on the east edge => Dirchlet condition T = exp(sqrt(1+(y/L)^2))
+        if (iy == 0 || iy == yNumber - 1){
+          // element on the upper or lower eastern corner
+          double y = iy * step; // y coordinate of the element
+          double yOverLSquared = (y / L) * (y / L);
+          (*b)[equationNumber] = - 0.5 * exp(sqrt(1 + yOverLSquared));
+        } else {
+          // element on the east edge
+          double y = iy * step; // y coordinate of the element
+          double yOverLSquared = (y / L) * (y / L);
+          (*b)[equationNumber] = - exp(sqrt(1 + yOverLSquared));
+        }
+      }
 
+      /* north neighbour element */
 
+      if (iy < yNumber - 1){
+        // element not the north edge
+        if (ix == 0) {
+          //element on the west edge
+          (*a)[nnz] = 0.5;
+          (*ja)[nnz] = equationNumber + xNumber;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = 1.0;
+          (*ja)[nnz] = equationNumber + xNumber;
+          nnz++;
+        }
+      }
     }
   }
+
+  (*ia)[equationNumber] = nnz; // terminates the ia array
   printf("Linear problem successfully generated\n");
-  return 0;
+  return 0; // usual function return
+
 }
