@@ -48,54 +48,67 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
 
       /* south neighbour element */
 
-      if (iy > 0 && ix == 0){
-        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
-        (*a)[nnz] = 0.5;
-        (*ja)[nnz] = equationNumber - xNumber;
-        nnz++;
-      } else if (iy > 0 && ix > 0){
-        // internal element
-        (*a)[nnz] = 1.0;
-        (*ja)[nnz] = equationNumber - xNumber;
-        nnz++;
+      if (iy > 0){
+        // element not on south edge
+        if (ix == 0){
+          // element on west edge => Von Neumann condition : dT/dx = 0
+          (*a)[nnz] = 0.5;
+          (*ja)[nnz] = equationNumber - xNumber;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = 1.0;
+          (*ja)[nnz] = equationNumber - xNumber;
+          nnz++;
+        }
       }
 
       /* west neighbour element */
 
-      if ((ix > 0 && iy == 0) || (ix > 0 && iy == yNumber - 1)){
-        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
-        (*a)[nnz] = 0.5;
-        (*ja)[nnz] = equationNumber - 1;
-        nnz++;
-      } else if (ix > 0 && (iy > 0 && iy < yNumber - 1)){
-        // internal element
-        (*a)[nnz] = 1.0;
-        (*ja)[nnz] = equationNumber - 1;
-        nnz++;
+      if (ix != 0){
+        // element not on west edge
+        if (iy == 0 || iy == yNumber - 1){
+          // element on south or north edge => Von Neumann condition : dT/dy = 0
+          (*a)[nnz] = 0.5;
+          (*ja)[nnz] = equationNumber - 1;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = 1.0;
+          (*ja)[nnz] = equationNumber - 1;
+          nnz++;
+        }
       }
 
       /* diagonal element */
 
-      if ((ix == 0 && iy == 0) || (ix == 0 && iy == yNumber - 1)){
-        // element on the lower or upper west corner => Von Neumann condition : dT/dx = dT/dy = 0
-        (*a)[nnz] = -1.0;
-        (*ja)[nnz] = equationNumber;
-        nnz++;
-      } else if ((iy == 0 && ix > 0) || (iy == yNumber - 1 && ix > 0)){
-        // element on the upper or lower edge => Von Neumann condition : dT/dy = 0
-        (*a)[nnz] = -2.0;
-        (*ja)[nnz] = equationNumber;
-        nnz++;
-      } else if (ix == 0 && (iy > 0 && iy < yNumber - 1)){
-        // element on the west edge => Von Neumann condition : dT/dx = 0
-        (*a)[nnz] = -2.0;
-        (*ja)[nnz] = equationNumber;
-        nnz++;
+      if (iy == 0 || iy == yNumber - 1){
+        // element on south or north edge
+        if (ix == 0){
+          /* element on the south west or north west corner
+          => Von Neumann condition : dT/dx = dT/dy = 0 */
+          (*a)[nnz] = -1.0;
+          (*ja)[nnz] = equationNumber;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = -2.0;
+          (*ja)[nnz] = equationNumber;
+          nnz++;
+        }
       } else {
-        // internal element
-        (*a)[nnz] = -4.0;
-        (*ja)[nnz] = equationNumber;
-        nnz;
+        // element not on south or north edge
+        if (ix == 0){
+          // element on west edge => Von Neumann condition : dT/dx = 0
+          (*a)[nnz] = -2.0;
+          (*ja)[nnz] = equationNumber;
+          nnz++;
+        } else {
+          // internal element
+          (*a)[nnz] = -4.0;
+          (*ja)[nnz] = equationNumber;
+          nnz++;
+        }
       }
 
       /* east neighbour element */
@@ -103,7 +116,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
       if (ix < xNumber - 1){
         // element not on the east edge
         if (iy == 0 || iy == yNumber - 1){
-          // element on the upper or lower edge
+          // element on the north or east edge
           (*a)[nnz] = 0.5;
           (*ja)[nnz] = equationNumber + 1;
           nnz++;
@@ -116,7 +129,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
       } else {
         // element on the east edge => Dirchlet condition T = exp(sqrt(1+(y/L)^2))
         if (iy == 0 || iy == yNumber - 1){
-          // element on the upper or lower eastern corner
+          // element on the north or south east corner
           double y = iy * step; // y coordinate of the element
           double yOverLSquared = (y / L) * (y / L);
           (*b)[equationNumber] = - 0.5 * exp(sqrt(1 + yOverLSquared));
