@@ -1,2 +1,4 @@
 # ignore generated .o files
-*.o
+./src/*.o
+# ignore executable main file
+main
