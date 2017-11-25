@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -W -Wall
-SRC = $(wildcard *.c)
+SRC = $(wildcard ./src/*.c)
 OBJ = $(SRC:.c=.o)
 
 main : $(OBJ)
@@ -10,7 +10,7 @@ $.o : $.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean :
-	rm -rf *.o
+	rm -rf ./src/*.o
 
 mrproper : clean
 	rm main 
