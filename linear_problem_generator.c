@@ -4,7 +4,7 @@
 /* this module has been rewritten, although it is widely similar to the provided
 code from 2016-2017 project */
 
-#include "linear_problem_generator.c"
+#include "linear_problem_generator.h"
 
 int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, double **a, double **b){
 
@@ -21,7 +21,8 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   *ia = malloc((*problemSize + 1) * sizeof(int)); // allocation of memory for the ia array of the matrix A
   *ja = malloc(nnz * sizeof(int)); // allocation of memory for the ja array of the matrix A
   *a = malloc(nnz * sizeof(double)); // allocation of memory for the a array of the matrix A
-  *b = malloc(*problemSize * sizeof(double)) // allocation of memory for the array of the vector b
+  //printf("%f\n", sizeof(*a));
+  *b = malloc(*problemSize * sizeof(double)); // allocation of memory for the array of the vector b
 
   /* checks whether the allocation of memory was successful, returns an error if not */
 
@@ -35,11 +36,11 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   nnz = 0; // nnz is back to 0, because it will be used and incremented to fill the arrays
   int equationNumber; // this is the index of the point using the lexicographic numbering
 
-  for(int iy = 0; iy < yNumber, iy++){
-    for(int ix = 0; ix < xNumber, ix++){
+  for(int iy = 0; iy < yNumber; iy++){
+    for(int ix = 0; ix < xNumber; ix++){
       /* this loop goes through every point of the problem using the lexicographic numbering */
       equationNumber = ix + iy * xNumber;
-      (*ia)[nnz] = equationNumber; // this indicates the start of a new line in the ia array
+      (*ia)[equationNumber] = nnz; // this indicates the start of a new line in the ia array
 
       /* filling the independent b array by default equal to 0 */
 
@@ -161,7 +162,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
     }
   }
 
-  (*ia)[equationNumber] = nnz; // terminates the ia array
+  (*ia)[equationNumber + 1] = nnz; // terminates the ia array
   printf("Linear problem successfully generated\n");
   return 0; // usual function return
 

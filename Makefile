@@ -1,6 +1,16 @@
-clean:
-	rm -f *.o
-	rm -f main
+CC = gcc
+CFLAGS = -W -Wall
+SRC = $(wildcard *.c)
+OBJ = $(SRC:.c=.o)
 
-main: main.c linear_project_generator.o
-	cc 
+main : $(OBJ)
+	$(CC) -o $@ $^ 
+
+$.o : $.c
+	$(CC) -o $@ -c $< $(CFLAGS)
+
+clean :
+	rm -rf *.o
+
+mrproper : clean
+	rm main 

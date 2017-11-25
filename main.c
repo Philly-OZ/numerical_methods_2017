@@ -16,14 +16,15 @@ int main(void){
   double *a, *b; /* array contzining the non zero elements of the matrix of the
   problem in CSR format, array of independent terms */
 
-  printf("~~~~~~~~~~~~~~~~~~~");
-  printf("PROGRAM STARTING...");
-  printf("~~~~~~~~~~~~~~~~~~~");
+  printf("~~~~~~~~~~~~~~~~~~~\n");
+  printf("PROGRAM STARTING...\n");
+  printf("~~~~~~~~~~~~~~~~~~~\n");
 
   if (generate_problem(m, L, &problemSize, &ia, &ja, &a, &b)){
     /* this will end the program if there was a problem with the creation of the
     arrays */
     return 0;
   }
+  
   return 1;
 }
