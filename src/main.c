@@ -5,24 +5,30 @@
 
 #include "main.h"
 
-int main(int argc, char *argv[]){
+int main(int argc, char **argv){
 
-  if (argc < 3){
+  if (argc <= 3){
 
     // correct number of arguments
 
-    // variables declarations
+    // debugging variables declaration
 
-    int DEBUG_A_MATRIX = argc == 2 && strcmp(argv[1], "-a") == 0; /* boolean
-    indicating whether the code is in debug A matrix mode */
-    int DEBUG_LINEAR_SYSTEM = argc == 2 && strcmp(argv[1], "-linsys") == 0; /* boolean
-    indicating whether the code is in linear system debugging mode */
+    int DEBUG_A_MATRIX; /* boolean variable indicating whether the code is in
+    A matrix debugging mode */
+    int DEBUG_LINEAR_SYSTEM; /* boolean variable indicating whether the code is
+    in linear system debugging mode */
+    generateOptions(&DEBUG_A_MATRIX, &DEBUG_LINEAR_SYSTEM, argc, argv);
+
+    // variables declaration
+
     int m = 4; // number of points in the y direction
     double L = 0.2; // size of the square membrane
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that will be
     filled by the matrix in CSR format */
-    double *a, *b; /* array contzining the non zero elements of the matrix of the
+    double *a, *b; /* array containing the non zero elements of the matrix of the
     problem in CSR format, array of independent terms */
+
+    // Program starting
 
     printf("\n~~~~~~~~~~~~~~~~~~~\n");
     printf("PROGRAM STARTING...\n");
@@ -38,14 +44,12 @@ int main(int argc, char *argv[]){
       // if debug a matrix is enabled
       printf("A matrix debugging is enabled\n");
       printAArrays(a, ja, ia, problemSize);
-      printf("Printing done.\n\n");
     }
 
     if(DEBUG_LINEAR_SYSTEM){
       // if debug linear system is enabled
       printf("Linear system debugging is enabled\n");
       printLinearSystemArrays(a, ja, ia, b, problemSize);
-      printf("Printing done.\n\n");
     }
 
     printf("Program ending...\n\n");

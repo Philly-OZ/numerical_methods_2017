@@ -28,7 +28,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
 
   if(*ia == NULL || *ja ==  NULL || *a == NULL){
     printf("\n ERROR : not enough memory to generate the problem\n\n");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   /* main part of this module, takes care of filling the arrays */
@@ -164,6 +164,6 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
 
   (*ia)[equationNumber + 1] = nnz; // not really a value of ia, just a saving of nnz
   printf("Linear problem successfully generated\n\n");
-  return 0; // usual function return
+  return EXIT_SUCCESS; // usual function return
 
 }

@@ -6,6 +6,22 @@ execution of the code */
 
 #include "debug.h"
 
+void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, int argc, char **argv){
+  // generates the boolean values corresponding to the selected options
+  *DEBUG_A_MATRIX = 0;
+  *DEBUG_LINEAR_SYSTEM = 0;
+  for (int i = 1; i < argc; i++){
+    // iterating through every passed arguments
+    if (strcmp(argv[i], "-a") == 0){
+       // if in debugging A matrix mode
+      *DEBUG_A_MATRIX = 1;
+    } else if (strcmp(argv[i], "-linsys") == 0){
+      // if in linear system debugging mode
+      *DEBUG_LINEAR_SYSTEM = 1;
+    }
+  }
+}
+
 void printAArrays(double *a, int *ja, int *ia, int problemSize){
   // prints the values contained the arrays corresponding to A matrix
   printf("Printing the CSR arrays corresponding to the A matrix\n\n");
