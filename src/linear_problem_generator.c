@@ -163,7 +163,7 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, doub
   }
 
   (*ia)[equationNumber + 1] = nnz; // terminates the ia array
-  printf("Linear problem successfully generated\n");
+  printf("Linear problem successfully generated\n\n");
   return 0; // usual function return
 
 }
