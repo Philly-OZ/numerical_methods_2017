@@ -7,3 +7,5 @@
 
 int generate_problem(int, double, int *, int **, int **, double **, double **);
 int strcmp(const char *, const char *);
+void printAArrays(double *, int *, int *, int);
+void printLinearSystemArrays(double *, int *, int *, double *, int);
