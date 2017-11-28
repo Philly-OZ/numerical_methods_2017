@@ -7,26 +7,31 @@
 
 int main(int argc, char **argv){
 
-  if (argc <= 3){
+  if (argc <= 5){
 
     // correct number of arguments
 
-    // debugging variables declaration
+    // option variables declaration
 
     int DEBUG_A_MATRIX; /* boolean variable indicating whether the code is in
     A matrix debugging mode */
     int DEBUG_LINEAR_SYSTEM; /* boolean variable indicating whether the code is
     in linear system debugging mode */
-    generateOptions(&DEBUG_A_MATRIX, &DEBUG_LINEAR_SYSTEM, argc, argv);
+    int UMF_SOLVE; /* boolean variable indicating whether the code is solving
+    the linear problem using UMF Pack */
+    int PRINT_SOLUTION; /* boolean variable indicating whether the code needs
+    to print the solution of the solved problem */
+    generateOptions(&DEBUG_A_MATRIX, &DEBUG_LINEAR_SYSTEM, &UMF_SOLVE, \
+      &PRINT_SOLUTION, argc, argv);
 
     // variables declaration
 
     int m = 4; // number of points in the y direction
     double L = 0.2; // size of the square membrane
-    int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that will be
-    filled by the matrix in CSR format */
-    double *a, *b; /* array containing the non zero elements of the matrix of the
-    problem in CSR format, array of independent terms */
+    int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
+     will be filled by the matrix in CSR format */
+    double *a, *b; /* array containing the non zero elements of the matrix of
+    the problem in CSR format, array of independent terms */
 
     // Program starting
 
@@ -35,8 +40,8 @@ int main(int argc, char **argv){
     printf("~~~~~~~~~~~~~~~~~~~\n\n");
 
     if (generate_problem(m, L, &problemSize, &ia, &ja, &a, &b)){
-      /* this will end the program if there was a problem with the creation of the
-      arrays */
+      /* this will end the program if there was a problem with the creation of
+      the arrays */
       return EXIT_FAILURE;
     }
 
@@ -46,10 +51,30 @@ int main(int argc, char **argv){
       printAArrays(a, ja, ia, problemSize);
     }
 
-    if(DEBUG_LINEAR_SYSTEM){
+    if (DEBUG_LINEAR_SYSTEM){
       // if debug linear system is enabled
       printf("Linear system debugging is enabled\n");
       printLinearSystemArrays(a, ja, ia, b, problemSize);
+    }
+
+    if (UMF_SOLVE){
+      // if UMF Pack solving of the linear system is enabled
+      printf("Solving the problem using UMF Pack...\n\n");
+      double *T = malloc(problemSize * sizeof(double)); /* vector containing the
+      solution computed using UMF Pack */
+      if (umfSolve(problemSize, a, ja, ia, T, b)){
+        printf("ERROR : UMF Pack solving failed\n");
+        return EXIT_FAILURE;
+      }
+      if (PRINT_SOLUTION){
+        printf("Printing the solution obtained with UMF Pack\n\n");
+        // if print solution mode is enabled
+        for (int i = 0; i < problemSize; i++){
+          // iterating through the solution vector
+          printf("%f\n", T[i]);
+        }
+        printf("\n");
+      }
     }
 
     printf("Program ending...\n\n");
