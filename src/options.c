@@ -7,12 +7,14 @@ execution of the code */
 #include "options.h"
 
 void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, \
-  int *UMF_SOLVE, int *PRINT_SOLUTION, int argc, char **argv){
+  int *UMF_SOLVE, int *PRINT_SOLUTION, int *PLOT_SOLUTION, int argc, \
+  char **argv){
   // generates the boolean values corresponding to the selected options
   *DEBUG_A_MATRIX = 0;
   *DEBUG_LINEAR_SYSTEM = 0;
   *UMF_SOLVE = 0;
   *PRINT_SOLUTION = 0;
+  *PLOT_SOLUTION = 0;
   for (int i = 1; i < argc; i++){
     // iterating through every passed arguments
     if (strcmp(argv[i], "-a") == 0){
@@ -27,6 +29,9 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, \
     } else if (strcmp(argv[i], "-print-s") == 0){
       // if the solution needs to be printed
       *PRINT_SOLUTION = 1;
+    } else if (strcmp(argv[i], "-plot") == 0){
+      // if the solution needs to be plotted
+      *PLOT_SOLUTION = 1;
     }
   }
 }

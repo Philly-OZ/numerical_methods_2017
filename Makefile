@@ -28,6 +28,7 @@ $(OBJ) : %.o: %.c
 
 clean :
 	@rm -rf ./src/*.o
+	@rm -rf ./graphics/*.png
 
 mrproper : clean
 	@rm main 

@@ -52,3 +52,9 @@ int umfSolve(int problemSize, double *a, int *ja, int *ia, double *x, \
       return EXIT_SUCCESS;
     }
   }
+
+double dirichletCondValue(double L, double y){
+	/* this function returns the value of the Dirichlet boundary condition at
+	point y */
+	return exp(sqrt(1+square(y / L)));
+}

@@ -1,20 +1,19 @@
 // Author : Denis Verstraeten
 // Created on : 23/11/2017
 
-/* this module has been rewritten, although it is widely similar to the provided
-code from 2016-2017 project */
+/* this module has been rewritten, although it is widely similar to the
+provided code from 2016-2017 project */
 
 #include "linear_problem_generator.h"
 
-int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, \
-  double **a, double **b){
+int generate_problem(int m, double L, double step, int *problemSize, \
+  int **ia, int **ja, double **a, double **b, double **dirichletCond){
 
   /* Initialization of the parameters of the problem */
 
   int xNumber = m - 1; // number of points in the x direction
   int yNumber = m; // number of points in the y direction
   *problemSize = xNumber * yNumber; // number of unknowns of the problem
-  double step = L / (m - 1); // length of the discretization step
   int nnz = 5 * (*problemSize) - 2 * xNumber - 2 * yNumber; /* non zero element
   of the matrix A */
 
@@ -29,11 +28,14 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, \
   the matrix A */
   *b = malloc(*problemSize * sizeof(double)); /* allocation of memory for the
   array of the vector b */
+  *dirichletCond = malloc(*problemSize * sizeof(double)); /* allocation of
+  memory for the Dirichlet condition vector */
 
   /* checks whether the allocation of memory was successful, returns an error
   if not */
 
-  if(*ia == NULL || *ja ==  NULL || *a == NULL){
+  if(*ia == NULL || *ja ==  NULL || *a == NULL || *b == NULL || \
+  *dirichletCond == NULL){
     printf("\n ERROR : not enough memory to generate the problem\n\n");
     return EXIT_FAILURE;
   }
@@ -56,6 +58,11 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, \
       /* filling the independent b array by default equal to 0 */
 
       (*b)[equationNumber] = 0.0;
+
+      /* filling the Dirichlet condition array */
+
+      double y = step * iy; // y coordinate of the point
+      (*dirichletCond)[equationNumber] = dirichletCondValue(L, y);
 
       /* starts to fill in the matrix */
 
@@ -143,14 +150,10 @@ int generate_problem(int m, double L, int *problemSize, int **ia, int **ja, \
         // element on the east edge=>Dirchlet condition T = exp(sqrt(1+(y/L)^2))
         if (iy == 0 || iy == yNumber - 1){
           // element on the north or south east corner
-          double y = iy * step; // y coordinate of the element
-          double yOverLSquared = (y / L) * (y / L);
-          (*b)[equationNumber] = - 0.5 * exp(sqrt(1 + yOverLSquared));
+          (*b)[equationNumber] = - 0.5 * (*dirichletCond)[equationNumber];
         } else {
           // element on the east edge
-          double y = iy * step; // y coordinate of the element
-          double yOverLSquared = (y / L) * (y / L);
-          (*b)[equationNumber] = - exp(sqrt(1 + yOverLSquared));
+          (*b)[equationNumber] = - (*dirichletCond)[equationNumber];
         }
       }
 

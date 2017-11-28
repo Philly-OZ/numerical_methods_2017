@@ -4,3 +4,5 @@
 main
 # ignore SuiteSparse library
 SuiteSparse/
+# ignore grphics
+*.png

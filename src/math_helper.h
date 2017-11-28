@@ -4,4 +4,11 @@
 #include <stdio.h>
 #include "umfpack.h"
 
-// Function declarations
+// Defines
+
+#define square(x) ((x) * (x))
+
+// Function declaration
+
+double sqrt(double);
+double exp(double);

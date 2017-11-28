@@ -6,5 +6,4 @@
 
 // Function declarations
 
-double sqrt(double);
-double exp(double);
+double dirichletCondValue(double, double);

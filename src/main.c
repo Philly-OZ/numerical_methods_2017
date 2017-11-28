@@ -21,17 +21,22 @@ int main(int argc, char **argv){
     the linear problem using UMF Pack */
     int PRINT_SOLUTION; /* boolean variable indicating whether the code needs
     to print the solution of the solved problem */
+    int PLOT_SOLUTION; /* boolean variable indicating whether the code needs to
+    plot the solution */
     generateOptions(&DEBUG_A_MATRIX, &DEBUG_LINEAR_SYSTEM, &UMF_SOLVE, \
-      &PRINT_SOLUTION, argc, argv);
+      &PRINT_SOLUTION, &PLOT_SOLUTION, argc, argv);
 
     // variables declaration
 
-    int m = 4; // number of points in the y direction
+    int m = 1000; // number of points in the y direction
     double L = 0.2; // size of the square membrane
+    double step = L / (m - 1); // length of the discretization step
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
      will be filled by the matrix in CSR format */
     double *a, *b; /* array containing the non zero elements of the matrix of
     the problem in CSR format, array of independent terms */
+    double *dirichletCond; /* array containing the Dirichlet condition of the
+    East edge */
 
     // Program starting
 
@@ -39,7 +44,8 @@ int main(int argc, char **argv){
     printf("PROGRAM STARTING...\n");
     printf("~~~~~~~~~~~~~~~~~~~\n\n");
 
-    if (generate_problem(m, L, &problemSize, &ia, &ja, &a, &b)){
+    if (generate_problem(m, L, step, &problemSize, &ia, &ja, &a, &b, \
+      &dirichletCond)){
       /* this will end the program if there was a problem with the creation of
       the arrays */
       return EXIT_FAILURE;
@@ -74,6 +80,15 @@ int main(int argc, char **argv){
           printf("%f\n", T[i]);
         }
         printf("\n");
+      }
+      if (PLOT_SOLUTION){
+        printf("Saving the plot of the solution obtained with UMF Pack\n");
+        // if plot solution mode is enabled
+        if (plot(m, step, T, dirichletCond)) {
+          printf("ERROR : could not plot the solution\n");
+          return EXIT_FAILURE;
+        }
+        printf("The result is saved in graphics directory\n\n");
       }
     }
 
