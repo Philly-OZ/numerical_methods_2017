@@ -48,7 +48,6 @@ int plot(int m, double step, double *T, double *dirichletCond){
   fprintf(gnuplot, "set xrange [0:0.2]\n");
   fprintf(gnuplot, "set ylabel 'y [m]'\n");
   fprintf(gnuplot, "set yrange [0:0.2]\n");
-  //fprintf(gnuplot, "set cbrange [0:5]\n");
   fprintf(gnuplot, "set pm3d interpolate 10,10\n");
   fprintf(gnuplot, "splot 'data.txt' using 1:2:3 with pm3d\n");
 
