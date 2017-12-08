@@ -1,7 +1,7 @@
 // Author : Denis Verstraeten
 // Created on : 27/11/2017
 
-/* this module will be used for all calculations */
+/* this module is used for all calculations */
 
 #include "math_helper.h"
 
@@ -40,18 +40,6 @@ int resolution(int *ia, int *ja, double *a, double *x, double *b, \
 	}
 	return EXIT_SUCCESS;
 }
-
-int umfSolve(int problemSize, double *a, int *ja, int *ia, double *x, \
-  double *b){
-    // this is called to actually solve the linear problem Ax=b
-    void *Numeric = NULL; // variable required for the factorisation
-    if (factorisation(problemSize, a, ja, ia, &Numeric) || \
-  resolution(ia, ja, a, x, b, &Numeric)){
-      return EXIT_FAILURE;
-    } else {
-      return EXIT_SUCCESS;
-    }
-  }
 
 double dirichletCondValue(double L, double y){
 	/* this function returns the value of the Dirichlet boundary condition at

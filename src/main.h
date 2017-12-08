@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 // Function declarations
 
@@ -12,3 +13,5 @@ void printAArrays(double *, int *, int *, int);
 void printLinearSystemArrays(double *, int *, int *, double *, int);
 int umfSolve(int, double *, int *j, int *, double *, double *);
 int plot(int, double, double *, double *);
+double timer(void);
+time_t time(int);

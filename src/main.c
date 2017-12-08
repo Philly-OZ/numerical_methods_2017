@@ -44,12 +44,16 @@ int main(int argc, char **argv){
     printf("PROGRAM STARTING...\n");
     printf("~~~~~~~~~~~~~~~~~~~\n\n");
 
+    double timeBeforeProblem = timer(); // time before generating the problem
     if (generate_problem(m, L, step, &problemSize, &ia, &ja, &a, &b, \
       &dirichletCond)){
       /* this will end the program if there was a problem with the creation of
       the arrays */
       return EXIT_FAILURE;
     }
+    double timeAfterProblem = timer(); // time when the problem is generated
+    printf("Time taken to generate the problem : %f seconds\n", \
+  timeAfterProblem - timeBeforeProblem);
 
     if (DEBUG_A_MATRIX) {
       // if debug a matrix is enabled
@@ -68,10 +72,17 @@ int main(int argc, char **argv){
       printf("Solving the problem using UMF Pack...\n\n");
       double *T = malloc(problemSize * sizeof(double)); /* vector containing the
       solution computed using UMF Pack */
+      time_t timeBeforeUmfSolve = time(0); /* time is used here instead of
+      timer() because since timer() is based on CPU clock time, it is not
+      suitable for times over a second. time() is less accurate but better for
+      longer durations */ 
       if (umfSolve(problemSize, a, ja, ia, T, b)){
         printf("ERROR : UMF Pack solving failed\n");
         return EXIT_FAILURE;
       }
+      time_t timeAfterUmfSolve = time(0);
+      printf("Time taken to solve the problem using UMF Pack : %f seconds\n",\
+    (double) timeAfterUmfSolve - timeBeforeUmfSolve );
       if (PRINT_SOLUTION){
         printf("Printing the solution obtained with UMF Pack\n\n");
         // if print solution mode is enabled
