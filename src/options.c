@@ -6,15 +6,17 @@ execution of the code */
 
 #include "options.h"
 
-void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, \
-  int *UMF_SOLVE, int *PRINT_SOLUTION, int *PLOT_SOLUTION, int argc, \
-  char **argv){
+void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM,
+  int *UMF_SOLVE, int *PRINT_SOLUTION, int *PLOT_SOLUTION, int *SGS_SOLVE,
+  int *PREC_DEBUG, int argc, char **argv){
   // generates the boolean values corresponding to the selected options
   *DEBUG_A_MATRIX = 0;
   *DEBUG_LINEAR_SYSTEM = 0;
   *UMF_SOLVE = 0;
   *PRINT_SOLUTION = 0;
   *PLOT_SOLUTION = 0;
+  *SGS_SOLVE = 0;
+  *PREC_DEBUG = 0;
   for (int i = 1; i < argc; i++){
     // iterating through every passed arguments
     if (strcmp(argv[i], "-a") == 0){
@@ -32,6 +34,10 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, \
     } else if (strcmp(argv[i], "-plot") == 0){
       // if the solution needs to be plotted
       *PLOT_SOLUTION = 1;
+    } else if (strcmp(argv[i], "-sgs-solve") == 0){
+      *SGS_SOLVE = 1;
+    } else if (strcmp(argv[i], "-sgs-prec-debug") == 0){
+      *PREC_DEBUG = 1;
     }
   }
 }
@@ -39,23 +45,17 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM, \
 void printAArrays(double *a, int *ja, int *ia, int problemSize){
   // prints the values contained the arrays corresponding to A matrix
   printf("Printing the CSR arrays corresponding to the A matrix\n\n");
-  printf("a array :\n");
-  printf("---------\n");
+  printf("a and ja arrays :\n");
+  printf("-----------------\n");
   for (int i = 0; i < ia[problemSize]; i++){
-    // iterating through elements of the a array
-    printf("%f\n", a[i]);
-  }
-  printf("\n\nja array :\n");
-  printf("----------\n");
-  for (int i = 0; i < ia[problemSize]; i++){
-    // iterating through elements of the ja array
-    printf("%i\n", ja[i]);
+    // iterating through elements of the a and ja arrays
+    printf("a[%d] = %f, ja[%d] = %d\n", i, a[i], i, ja[i]);
   }
   printf("\n\nia array :\n");
   printf("----------\n");
   for (int i = 0; i < problemSize + 1; i++){
     // iterating through elements of the ia array
-    printf("%i\n", ia[i]);
+    printf("ia[%d] = %i\n", i, ia[i]);
   }
   printf("\n\n------------\n\n");
 }
@@ -75,3 +75,50 @@ void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, \
   printf("\n\n------------\n\n");
 
 }
+
+void printPrecSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
+  int *jua, double *da, int problemSize){
+    /* prints the values contained in the arrays representing L, U and D
+    matrixes used in SGS preconditionning */
+    int nnzLA = ila[problemSize]; // number of nnz in the L matrix
+    int nnzUA = iua[problemSize]; // numerb of nnz in the U matrix
+    printf("Printing the arrays corresponding to matrix L \n\n");
+    printf("la and jla arrays : \n");
+    printf("--------------------\n\n");
+    for (int i = 0; i < nnzLA; i++){
+      // iterating though elements of la and jla arrays
+      printf("la[%d] = %f, jla[%d] = %d\n", i, la[i], i, jla[i]);
+    }
+    printf("\n\nila array : \n");
+    printf("------------\n\n");
+    for (int i = 0; i < problemSize + 1; i++){
+      // iterating though elements of ila array
+      printf("ila[%d] = %d\n", i, ila[i]);
+    }
+    printf("\n\n------------\n\n");
+
+    printf("Printing the arrays corresponding to matrix U \n\n");
+    printf("ua and jua arrays : \n");
+    printf("--------------------\n\n");
+    for (int i = 0; i < nnzUA; i++){
+      // iterating though elements of la and jla arrays
+      printf("ua[%d] = %f, jua[%d] = %d\n", i, ua[i], i, jua[i]);
+    }
+    printf("\n\niua array : \n");
+    printf("------------\n\n");
+    for (int i = 0; i < problemSize + 1; i++){
+      // iterating though elements of ila array
+      printf("iua[%d] = %d\n", i, iua[i]);
+    }
+    printf("\n\n------------\n\n");
+
+    printf("Printing the array corresponding to matrix D \n\n");
+    printf("da array : \n");
+    printf("-----------\n\n");
+    for (int i = 0; i < problemSize; i++){
+      // iterating through da array
+      printf("da[%d,%d] = %f\n", i, i, da[i]);
+    }
+    printf("\n\n------------\n\n");
+
+  }

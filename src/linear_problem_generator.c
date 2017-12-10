@@ -6,7 +6,7 @@ provided code from 2016-2017 project */
 
 #include "linear_problem_generator.h"
 
-int generate_problem(int m, double L, double step, int *problemSize, \
+int generate_problem(int m, double L, double step, int *problemSize,
   int **ia, int **ja, double **a, double **b, double **dirichletCond){
 
   /* Initialization of the parameters of the problem */
@@ -34,7 +34,7 @@ int generate_problem(int m, double L, double step, int *problemSize, \
   /* checks whether the allocation of memory was successful, returns an error
   if not */
 
-  if(*ia == NULL || *ja ==  NULL || *a == NULL || *b == NULL || \
+  if(*ia == NULL || *ja ==  NULL || *a == NULL || *b == NULL ||
   *dirichletCond == NULL){
     printf("\n ERROR : not enough memory to generate the problem\n\n");
     return EXIT_FAILURE;
@@ -176,8 +176,7 @@ int generate_problem(int m, double L, double step, int *problemSize, \
     }
   }
 
-  (*ia)[equationNumber + 1] = nnz; /* not really a value of ia, just a saving
-  of nnz */
+  (*ia)[equationNumber + 1] = nnz; // saving of nnz 
   printf("Linear problem successfully generated\n");
   return EXIT_SUCCESS; // usual function return
 

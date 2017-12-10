@@ -13,9 +13,12 @@ U1 = -I SuiteSparse/UMFPACK/Include
 U2 = -I SuiteSparse/SuiteSparse_config
 U3 = -I SuiteSparse/AMD/Include
 
+# Includes
+U = -I includes
+
 CC = cc
 CFLAGS = -W -Wall
-INCLUDES = $(U1) $(U2) $(U3)
+INCLUDES = $(U1) $(U2) $(U3) $(U)
 LIBS = $(L1) $(L2) $(L3) $(L4) $(L5) $(L6) $(L7) $(L8) -lm -lblas -llapack
 SRC = $(wildcard ./src/*.c)
 OBJ = $(SRC:.c=.o)
