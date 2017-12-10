@@ -11,3 +11,5 @@ int splitAMatrix(int, int, double *, int *, int *, double **, int **, int **,
   double **, int **, int **, double **);
 void printPrecSGSArrays(double *, double *, int *, int *, int *, int *,
   double *, int);
+int inverseMatrix(int, double **, int **, int **, double *, int *, int *);
+void printInvSGSArrays(double *, double *, int *, int *, int *, int *, int);
