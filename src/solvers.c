@@ -18,8 +18,7 @@ int umfSolve(int problemSize, double *a, int *ja, int *ia, double *x,
   }
 
 int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
-  double minResidue, int maxIterations, int m, int problemSize, int PREC_DEBUG,
-  int INV_DEBUG){
+  double minResidue, int maxIterations, int m, int problemSize, int PREC_DEBUG){
     /* this function solves Ax=b iteratively using Symmetric Gauss Seidel
     preconditionning.
     a, ia, ja : arrays containing the A matrix in CSR format
@@ -50,7 +49,8 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     if (PREC_DEBUG){
       // code is in preconditionner debugging mode for SGS solving
-      printf("DEBUGGING : preconditionning for SGS\n");
+      printf("DEBUGGING : preconditionning for SGS : \n");
+      printf("Printing the splitting of matrix A\n");
       printf("Printing the arrays...\n\n");
       printPrecSGSArrays(la, ua, ila, iua, jla, jua, da, problemSize);
     }
@@ -58,34 +58,33 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     // Inversing U and L
 
     double *invLa, *invUa;
-    int *invJLa, *invILa, *invJUa, *invIUa; /* arrays that will be filled with
+    int *invJla, *invIla, *invJua, *invIua; /* arrays that will be filled with
     L^-1 and U^-1 in CRS format */
 
-    if(inverseMatrix(problemSize, &invLa, &invJLa, &invILa, la, jla, ila)){
+    if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila)){
       printf("ERROR : inversing of LA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invUa); free(invJLa); free(invILa); free(invJUa);
-      free(invIUa);
+      free(invLa); free(invJla); free(invIla); 
       return EXIT_FAILURE;
     }
 
-    if(inverseMatrix(problemSize, &invUa, &invJUa, &invIUa, ua, jua, iua)){
+    if(inverseMatrix(problemSize, &invUa, &invJua, &invIua, ua, jua, iua)){
       printf("ERROR : inversing of UA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invUa); free(invJLa); free(invILa); free(invJUa);
-      free(invIUa);
+      free(invLa); free(invUa); free(invJla); free(invIla); free(invJua);
+      free(invIua);
       return EXIT_FAILURE;
     }
 
     free(la); free(ua); free(jla); free(jua); free(ila); free(iua); /* freeing
     memory, only inverse matrix are needed */
 
-    if (INV_DEBUG){
-      // code is inversion debugging mode for SGS solving
+    if (PREC_DEBUG){
+      // code is in preconditionner debugging mode for SGS solving
       printf("DEBUGGING : inversion of matrix for SGS\n");
       printf("Printing the arrays...\n\n");
-      printInvSGSArrays(invLa, invUa, invILa, invIUa, invJLa, invJUa,
-        problemSize); // TO DO : implement it option !!!!!!!!!!!
+      printInvSGSArrays(invLa, invUa, invIla, invIua, invJla, invJua,
+        problemSize);
     }
 
     return EXIT_SUCCESS;

@@ -35,8 +35,10 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM,
       // if the solution needs to be plotted
       *PLOT_SOLUTION = 1;
     } else if (strcmp(argv[i], "-sgs-solve") == 0){
+      // if the system is solved using SGS
       *SGS_SOLVE = 1;
     } else if (strcmp(argv[i], "-sgs-prec-debug") == 0){
+      // if in debugging preconditionning for SGS mode
       *PREC_DEBUG = 1;
     }
   }
@@ -121,4 +123,41 @@ void printPrecSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
     }
     printf("\n\n------------\n\n");
 
+  }
+
+void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
+   int *invJla, int *invJua, int problemSize){
+    /* prints the values contained in the arrays representing L^-1 and U^-1
+    matrixes used in SGS preconditionning */
+    int nnzInvLA = invIla[problemSize]; // number of nnz in the L matrix
+    int nnzInvUA = invIua[problemSize]; // numerb of nnz in the U matrix
+    printf("Printing the arrays corresponding to matrix L^-1 \n\n");
+    printf("invLa and invJla arrays : \n");
+    printf("--------------------\n\n");
+    for (int i = 0; i < nnzInvLA; i++){
+      // iterating though elements of la and jla arrays
+      printf("invLa[%d] = %f, invJla[%d] = %d\n", i, invLa[i], i, invJla[i]);
+    }
+    printf("\n\ninvIla array : \n");
+    printf("------------\n\n");
+    for (int i = 0; i < problemSize + 1; i++){
+      // iterating though elements of ila array
+      printf("invIla[%d] = %d\n", i, invIla[i]);
+    }
+    printf("\n\n------------\n\n");
+
+    printf("Printing the arrays corresponding to matrix U^-1 \n\n");
+    printf("invUa and invJua arrays : \n");
+    printf("--------------------\n\n");
+    for (int i = 0; i < nnzInvUA; i++){
+      // iterating though elements of la and jla arrays
+      printf("invUa[%d] = %f, invJua[%d] = %d\n", i, invUa[i], i, invJua[i]);
+    }
+    printf("\n\ninvIua array : \n");
+    printf("------------\n\n");
+    for (int i = 0; i < problemSize + 1; i++){
+      // iterating though elements of ila array
+      printf("invIua[%d] = %d\n", i, invIua[i]);
+    }
+    printf("\n\n------------\n\n");
   }

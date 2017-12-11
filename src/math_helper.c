@@ -159,12 +159,20 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		before generating the ctual arrays */
 		for (int i = 0; i < problemSize; i++){
 			// computing the columns of A^-1
-			int *b = calloc(problemSize * sizeof(int));
+			double *b = malloc(problemSize * sizeof(double));
 			if (b == NULL){
 				printf("ERROR : not enough memory for array b_i in matrix inversion\n");
 				return EXIT_FAILURE;
 			}
-			b[i] = 1; // ith vector of the canonic basis
+			for (int j = 0; j < problemSize; j++){
+				// forming the ith vector of the canonic basis
+				if (j != i){
+					b[j] = 0.0;
+				} else {
+					b[j] = 1.0;
+				}
+			}
+			
 			double *ithColumnInvA = malloc(problemSize * sizeof(double)); /* ith
 			column of A^-1, computed using UMF Pack */
 			if (ithColumnInvA == NULL){
@@ -181,7 +189,7 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				tempInvA[i * problemSize + j] = ithColumnInvA[j]; /* storing the jth
 				element of the ith column into the temporary array */
 				if (ithColumnInvA[j] != 0){
-					nnzLA++; // increases the number of nnz elements
+					nnzInvA++; // increases the number of nnz elements
 				}
 			}
 			free(b); free(ithColumnInvA); // freeing the memory
@@ -206,13 +214,13 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				/* iterating through all the elements of tempInvA and filling in the
 				arrays */
 				if (tempInvA[i + j * problemSize] != 0){
-					(*invA)[nnz] = tempInvA[i + j * problemSize];
-					(*invJa)[nnz] = j;
+					(*invA)[nnzInvA] = tempInvA[i + j * problemSize];
+					(*invJa)[nnzInvA] = j;
 					nnzInvA++;
 				}
 			}
 		}
-		invIa[problemSize] = nnzInvA; //saving of nnzInvA
+		(*invIa)[problemSize] = nnzInvA; //saving of nnzInvA
 		free(tempInvA); // freeing memory
 
 		return EXIT_SUCCESS;
