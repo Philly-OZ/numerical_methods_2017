@@ -60,6 +60,11 @@ void printAArrays(double *a, int *ja, int *ia, int problemSize){
     printf("ia[%d] = %i\n", i, ia[i]);
   }
   printf("\n\n------------\n\n");
+
+  printf("Number of nnz elements : \n");
+  printf("A : %d\n", ia[problemSize]);
+
+  printf("\n\n------------\n\n");
 }
 
 void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, \
@@ -123,6 +128,9 @@ void printPrecSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
     }
     printf("\n\n------------\n\n");
 
+    printf("Number of nnz elements : \n");
+    printf("LA : %d, UA : %d\n\n", ila[problemSize], iua[problemSize]);
+
   }
 
 void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
@@ -136,7 +144,7 @@ void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
     printf("--------------------\n\n");
     for (int i = 0; i < nnzInvLA; i++){
       // iterating though elements of la and jla arrays
-      printf("invLa[%d] = %f, invJla[%d] = %d\n", i, invLa[i], i, invJla[i]);
+      printf("invLa[%d] = %lf, invJla[%d] = %d\n", i, invLa[i], i, invJla[i]);
     }
     printf("\n\ninvIla array : \n");
     printf("------------\n\n");
@@ -151,7 +159,7 @@ void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
     printf("--------------------\n\n");
     for (int i = 0; i < nnzInvUA; i++){
       // iterating though elements of la and jla arrays
-      printf("invUa[%d] = %f, invJua[%d] = %d\n", i, invUa[i], i, invJua[i]);
+      printf("invUa[%d] = %lf, invJua[%d] = %d\n", i, invUa[i], i, invJua[i]);
     }
     printf("\n\ninvIua array : \n");
     printf("------------\n\n");
@@ -159,5 +167,11 @@ void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
       // iterating though elements of ila array
       printf("invIua[%d] = %d\n", i, invIua[i]);
     }
+    printf("\n\n------------\n\n");
+
+    printf("Number of nnz elements : \n");
+    printf("LA^-1 : %d, UA^-1 : %d\n\n", invIla[problemSize],
+      invIua[problemSize]);
+
     printf("\n\n------------\n\n");
   }

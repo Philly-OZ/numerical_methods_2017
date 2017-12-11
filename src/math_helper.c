@@ -137,13 +137,72 @@ int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 	return EXIT_SUCCESS;
 }
 
+int lowerTriangularSolver(int problemSize, double *a, int *ja, int *ia,
+	double **x, double *b){
+		/* this function solves the system Ax=b with A a lower triangular matrix
+		stored in CSR format */
+		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
+		array */
+		if (*x == NULL){
+			printf("ERROR : not enough memory to inverse the lower triangular \
+			matrix.\n");
+			return EXIT_FAILURE;
+		}
+		for (int i = 0; i < problemSize; i++){
+			// iterating through the lines of the matrix A
+			double sum = 0; // sum_{j<i} a[i,j]*x[j]
+			for (int j = ia[i]; j < ia[i + 1] - 1; j++){
+				// iterating through the non zeros elements of the ith line of matrix A
+				sum += a[j] * (*x)[ja[j]];
+			}
+			(*x)[i] = (1.0 / a[ia[i + 1] - 1]) * (b[i] - sum);
+			if ((*x)[i] < 1e-6 && (*x)[i] > - 1e-6){
+				// to avoid a 0 being saved as 0.0000000.....
+				(*x)[i] = 0;
+			}
+			sum = 0;
+		}
+		return EXIT_SUCCESS;
+	}
+
+int upperTriangularSolver(int problemSize, double *a, int *ja, int *ia,
+	double **x, double *b){
+		/* this function solves the system Ax=b with A a upper triangular matrix
+		stored in CSR format */
+		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
+		array */
+		if (*x == NULL){
+			printf("ERROR : not enough memory to inverse the upper triangular \
+			matrix.\n");
+			return EXIT_FAILURE;
+		}
+		for (int i = problemSize - 1; i >= 0; i--){
+			// iterating through the lines of the matrix A
+			double sum = 0; // sum_{j<i} a[i,j]*x[j]
+			for (int j = ia[i] + 1; j < ia[i + 1]; j++){
+				// iterating through the non zeros elements of the ith line of matrix A
+				sum += a[j] * (*x)[ja[j]];
+			}
+			(*x)[i] = (1.0 / a[ia[i]]) * (b[i] - sum);
+			if ((*x)[i] < 1e-6 && (*x)[i] > - 1e-6){
+				// to avoid a 0 being saved as 0.0000000.....
+				(*x)[i] = 0;
+			}
+			sum = 0;
+		}
+		return EXIT_SUCCESS;
+	}
+
 int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
-	double *a, int *ja, int *ia){
+	double *a, int *ja, int *ia, int UP){
 		/* this functions returns the inverse of the matrix A stored in CSR in
 		a, ja and ia as CSR arrays invA, invJa, invIa. It uses the UMF Pack solver
 		since this will actually only deals with triangular matrix.
 		It solves the system Ax=b <=> x=A\b with b a vector of the canonic basis
-		=> solving the system b_i gives the ith column of A^-1 */
+		=> solving the system b_i gives the ith column of A^-1.
+		UP parameter is a boolean value telling whether the matrix is upper or lower
+		triangular */
+
 		double *tempInvA = malloc(square(problemSize) * sizeof(double));
 		if (tempInvA == NULL){
 			printf("ERROR : not enough memory for array tempInvA in matrix \
@@ -172,18 +231,27 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 					b[j] = 1.0;
 				}
 			}
-			
-			double *ithColumnInvA = malloc(problemSize * sizeof(double)); /* ith
-			column of A^-1, computed using UMF Pack */
-			if (ithColumnInvA == NULL){
-				printf("ERROR : not enough memory for array ithColumn in matrix\
-				inversion\n");
+
+			double *ithColumnInvA; // ith column of A^-1, computed using UMF Pack
+
+			if (UP){
+				// the matrix to inverse is a upper triangular one
+				if (upperTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
+					printf("ERROR : upper triangular matrix solving failed to inverse\
+					matrix\n");
+					free(b);
+					return EXIT_FAILURE;
+				}
+			} else {
+				// the matrix to inverse is a lower triangular one
+				if(lowerTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
+					printf("ERROR : lower triangular matrix solving failed to inverse\
+					matrix\n");
+					free(b);
+					return EXIT_FAILURE;
+				}
 			}
-			if (umfSolve(problemSize, a, ja, ia, ithColumnInvA, b)){
-				printf("ERROR : UMF Solve failed while inversing a matrix.\n");
-				free(tempInvA); free(b); free(ithColumnInvA); // releasing memory
-				return EXIT_FAILURE;
-			}
+
 			for (int j = 0; j < problemSize; j++){
 				// iterating through the computed ith column of A^-1
 				tempInvA[i * problemSize + j] = ithColumnInvA[j]; /* storing the jth

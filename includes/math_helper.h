@@ -12,4 +12,3 @@
 
 double sqrt(double);
 double exp(double);
-int umfSolve(int, double *, int *, int *, double *, double *);

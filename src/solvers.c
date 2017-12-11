@@ -61,14 +61,16 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     int *invJla, *invIla, *invJua, *invIua; /* arrays that will be filled with
     L^-1 and U^-1 in CRS format */
 
-    if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila)){
+    int LOW = 0; // this is a lower triangular matrix
+    if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila, LOW)){
       printf("ERROR : inversing of LA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invJla); free(invIla); 
+      free(invLa); free(invJla); free(invIla);
       return EXIT_FAILURE;
     }
 
-    if(inverseMatrix(problemSize, &invUa, &invJua, &invIua, ua, jua, iua)){
+    int UP = 1; // this is a upper triangular matrix
+    if(inverseMatrix(problemSize, &invUa, &invJua, &invIua, ua, jua, iua, UP)){
       printf("ERROR : inversing of UA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
       free(invLa); free(invUa); free(invJla); free(invIla); free(invJua);

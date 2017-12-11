@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 
     // variables declaration
 
-    int m = 4; // number of points in the y direction
+    int m = 100; // number of points in the y direction
     double L = 0.2; // size of the square membrane
     double step = L / (m - 1); // length of the discretization step
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
