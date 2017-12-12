@@ -232,7 +232,8 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				}
 			}
 
-			double *ithColumnInvA; // ith column of A^-1, computed using UMF Pack
+			double *ithColumnInvA; /* ith column of A^-1, computed using triangular
+			solvers */
 
 			if (UP){
 				// the matrix to inverse is a upper triangular one
@@ -290,6 +291,92 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		}
 		(*invIa)[problemSize] = nnzInvA; //saving of nnzInvA
 		free(tempInvA); // freeing memory
+
+		return EXIT_SUCCESS;
+	}
+
+double getIJElementCSR(int i, int j, double *a, int *ja, int *ia){
+	// this funtions returns the value A[i,j] of a matrix A stored in CSR format
+	for(int k = ia[i]; k < ia[i + 1]; k++){
+		// iterating through the non zero elements of the ith line of A
+		if (j == ja[k]){
+			return a[k];
+		}
+	}
+	return 0.0;
+}
+
+int makePreconditionner(int problemSize, double *da, double *invLa,
+	double *invUa, int *invJla, int *invJua, int *invIla, int *invIua,
+	double **prec, int **jPrec, int **iPrec){
+		/* this funtion computes the product of the matrixes LA^-1, UA^-1 and DA to
+		obtain the preconditionning B^-1 = UA^-1 * DA * LA^-1. It stores the result
+		in CSR format */
+
+		double *tempPrec = malloc(square(problemSize) * sizeof(double));
+		/* temporary array in which every values of B^-1 will be stored
+		(even zeros) */
+		if(tempPrec == NULL){
+			printf("ERROR : not enough memory to generate preconditionning matrix\n");
+			return EXIT_FAILURE;
+		}
+
+		// Computing the product of the matrixes
+
+		int nnzPrec = 0; // number of non zero elements of the preconditionner
+		for (int i = 0; i < problemSize; i++){
+			// iterating through the lines of B^-1
+			for (int j = 0; j < problemSize; j++){
+				// iterating through the elements of ith line of B^-1
+				double sum = 0; // value that will be saved as B^-1[i,j]
+				for (int k = 0; k < problemSize; k++){
+					/* iterating through the ith line of UA^-1, the jth column of LA^-1
+					and DA to compute the product */
+					sum += getIJElementCSR(i, k, invUa, invJua, invIua) *
+						getIJElementCSR(k, j, invLa, invJla, invIla) * da[k];
+				}
+				if (sum != 0){
+					nnzPrec ++;
+				}
+				tempPrec[i * problemSize + j] = sum; /* saving the computed value in the
+				temporary array */
+			}
+		}
+
+		/* Formatting the result to CSR */
+
+		// Memory allocations
+
+		*prec = malloc(nnzPrec * sizeof(double));
+		*jPrec = malloc(nnzPrec * sizeof(double));
+		*iPrec = malloc((problemSize + 1) * sizeof(double)); /* allocation of memory
+		for the array in which B^-1 will be stored */
+
+		if (*prec == NULL || *jPrec == NULL || *iPrec == NULL){
+			printf("ERROR :  not enough memory to store preconditionner\n");
+			free(tempPrec);
+			return EXIT_FAILURE;
+		}
+
+		// Filling the arrays
+
+		nnzPrec = 0; // back to 0, it will be used to fill in the arrays
+
+		for (int i = 0; i < problemSize; i++){
+			//iterating through the lines of tempPrec
+			(*iPrec)[i] = nnzPrec;
+			for (int j = 0; j < problemSize; j++){
+				// iterating through the elements of the ith line of tempPrec
+				if (tempPrec[i * problemSize + j] != 0.0){
+					// non zero element, needs to be saved in the arrays
+					(*prec)[nnzPrec] = tempPrec[i * problemSize + j];
+					(*jPrec)[nnzPrec] = j;
+					nnzPrec++;
+				}
+			}
+		}
+
+		(*iPrec)[problemSize] = nnzPrec; //saving of the number of non zero elements
 
 		return EXIT_SUCCESS;
 	}

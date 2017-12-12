@@ -83,7 +83,7 @@ void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, \
 
 }
 
-void printPrecSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
+void printSplitSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
   int *jua, double *da, int problemSize){
     /* prints the values contained in the arrays representing L, U and D
     matrixes used in SGS preconditionning */
@@ -175,3 +175,30 @@ void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
 
     printf("\n\n------------\n\n");
   }
+
+
+void printPrecSGSArrays(double *prec, int *jPrec, int *iPrec, int problemSize){
+  /* prints the values contained in the arrays representing the
+  preconditionner for SGS solve */
+  printf("Printing the CSR arrays corresponding to the preconditionning \
+    matrix\n\n");
+  printf("prec and jPrec arrays :\n");
+  printf("-----------------------\n");
+  for (int i = 0; i < iPrec[problemSize]; i++){
+    // iterating through elements of the a and ja arrays
+    printf("prec[%d] = %f, jPrec[%d] = %d\n", i, prec[i], i, jPrec[i]);
+  }
+  printf("\n\niPrec array :\n");
+  printf("-------------\n");
+  for (int i = 0; i < problemSize + 1; i++){
+    // iterating through elements of the ia array
+    printf("iPrec[%d] = %i\n", i, iPrec[i]);
+  }
+  printf("\n\n------------\n\n");
+
+  printf("Number of nnz elements : \n");
+  printf("B^-1 : %d\n", iPrec[problemSize]);
+
+  printf("\n\n------------\n\n");
+
+}

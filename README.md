@@ -2,4 +2,4 @@
 
 # Author : Denis Verstraeten
 
-The aim of this project is to solve iteratively a linear problem corresponding to a stationary heat conduction equation. First it implements the differential problem as a linear system of equations. Then the multigrain method, and finally the conjugate gradient method.
+The aim of this project is to solve iteratively a linear problem corresponding to a stationary heat conduction equation. First it implements the differential problem as a linear system of equations. Then the multigrid method, and finally the conjugate gradient method.

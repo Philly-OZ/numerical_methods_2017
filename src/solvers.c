@@ -52,7 +52,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("DEBUGGING : preconditionning for SGS : \n");
       printf("Printing the splitting of matrix A\n");
       printf("Printing the arrays...\n\n");
-      printPrecSGSArrays(la, ua, ila, iua, jla, jua, da, problemSize);
+      printSplitSGSArrays(la, ua, ila, iua, jla, jua, da, problemSize);
     }
 
     // Inversing U and L
@@ -87,6 +87,31 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("Printing the arrays...\n\n");
       printInvSGSArrays(invLa, invUa, invIla, invIua, invJla, invJua,
         problemSize);
+    }
+
+    // Generating preconditionner
+
+    double *prec;
+    int *jPrec, *iPrec; /* arrays that will be filled by the matrix B^-1 in
+    CSR format */
+
+    if (makePreconditionner(problemSize, da, invLa, invUa, invJla, invJua,
+      invIla, invIua, &prec, &jPrec, &iPrec)){
+        printf("ERROR : could not calcultate preconditionner\n");
+        free(da); free(invLa); free(invUa); free(invJla); free(invJua);
+        free(invIla); free(invIua);
+        return EXIT_FAILURE;
+    }
+
+    free(da); free(invLa); free(invUa); free(invJla); free(invJua);
+    free(invIla); free(invIua); /* freeing memory, only preconditionner is
+    needed */
+
+    if (PREC_DEBUG){
+      // code is in preconditionner debugging mode for SGS solving
+      printf("DEBUGGING : computation of preconditionner for SGS\n");
+      printf("Printing the arrays...\n\n");
+      printPrecSGSArrays(prec, jPrec, iPrec, problemSize);
     }
 
     return EXIT_SUCCESS;
