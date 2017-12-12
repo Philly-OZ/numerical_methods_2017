@@ -380,3 +380,86 @@ int makePreconditionner(int problemSize, double *da, double *invLa,
 
 		return EXIT_SUCCESS;
 	}
+
+int matrixVectorMultCSR(int problemSize, double *a, int *ja, int *ia,
+	double *vector, double **newVector){
+		/* this function computes the product A*vector with A a square matrix and
+		vector a vector of matching dimension */
+
+		for (int i = 0; i < problemSize; i++){
+			// iterating through the lines of A and vector to compute the product
+			double sum = 0; // value of the ith component of the vector
+			for (int j = ia[i]; j < ia[i + 1]; j++){
+				// iterating through the non zero elements of the ith line of A
+				sum += a[j] * vector[ja[j]];
+			}
+			(*newVector)[i] = sum;
+			sum = 0;
+		}
+		return EXIT_SUCCESS;
+	}
+
+double normVector(int problemSize, double *vector){
+	// this function returns the Euclidean norm of a vector
+	double squaredNorm = 0; // sum of the squared elements of the vector
+	for (int i = 0; i < problemSize; i++){
+		// iterating through the elements of vector
+		squaredNorm += square(vector[i]);
+	}
+	return sqrt(squaredNorm); // returns the square root of the squared norm
+}
+
+int vectorDifference(int problemSize, double *vector1, double *vector2,
+	double **difference){
+	/* this functions returns the difference between the two vectors vector 1 and
+	vector2 */
+
+	for (int i = 0; i < problemSize; i++){
+		// iterating through the elements of vector1, vector 2 and difference
+		(*difference)[i] = vector1[i] - vector2[i];
+	}
+
+	return EXIT_SUCCESS;
+}
+
+int vectorAddition(int problemSize, double *vector1, double *vector2,
+	double **addition){
+		// this function returns the sum of the two vectors vector1 and vector2
+
+		for (int i = 0; i < problemSize; i++){
+			// iterating through the elements of vector1, vector 2 and difference
+			(*addition)[i] = vector1[i] + vector2[i];
+		}
+
+		return EXIT_SUCCESS;
+	}
+
+int getResidue(int problemSize, double *b, double *a, int *ja, int *ia,
+	double *u, double **residue){
+		/* this function returns the residue of the current approximation by
+		computing r_m = b - A*u_m */
+
+		// Memory allocation
+
+		double *product = malloc(problemSize * sizeof(double)); /* array containing
+		the result of the matrix-vector product */
+
+		// Computing A*u_m
+
+		if (matrixVectorMultCSR(problemSize, a, ja, ia, u, &product)){
+			printf("ERROR : could not compute matrix-vector product\n");
+			return EXIT_FAILURE;
+		}
+
+		// Computing b - A*u_m
+
+		if (vectorDifference(problemSize, b, product, residue)){
+			printf("ERROR : could not compute vector difference\n");
+			free(product);
+			return EXIT_FAILURE;
+		}
+		free(product); // freeing memory
+
+		return EXIT_SUCCESS;
+
+	}

@@ -16,3 +16,7 @@ void printInvSGSArrays(double *, double *, int *, int *, int *, int *, int);
 int makePreconditionner(int, double *, double *, double *, int *, int *, int *,
   int *, double **, int **, int **);
 void printPrecSGSArrays(double *, int *, int *, int);
+int getResidue(int, double *, double *, int *, int *, double *, double **);
+double normVector(int , double *);
+int matrixVectorMultCSR(int, double *, int *, int *, double *, double **);
+int vectorAddition(int, double *, double *, double **);

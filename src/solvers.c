@@ -114,5 +114,106 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printPrecSGSArrays(prec, jPrec, iPrec, problemSize);
     }
 
+    /* Starting the iterative method */
+
+    // initialising the variables
+
+      // solution arrays
+
+    double *x0 = malloc(problemSize * sizeof(double));
+    *x = malloc(problemSize * sizeof(double)); /* allocation of memory
+    of x_m and x_{m+1} */
+
+    if (x0 == NULL || *x == NULL){
+      printf("ERROR : not enough to initialise the solutions arrays\n");
+      free(prec); free(jPrec); free(iPrec);
+      return EXIT_FAILURE;
+    }
+
+    for (int i = 0; i < problemSize; i++){
+      // initialising the solution vectors to null vector
+      x0[i] = 0.0;
+      (*x)[i] = 0.0;
+    }
+
+      // residue
+
+    double *residue = malloc(problemSize * sizeof(double)); /* memory allocation
+    for the residue */
+
+    if (residue == NULL){
+      printf("ERROR : not enough memory to initialise the residue array\n");
+      free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
+      return EXIT_FAILURE;
+    }
+
+    if (getResidue(problemSize, b, a, ja, ia, x0, &residue)){
+      printf("ERROR : could not compute the initial residue\n");
+      free(prec); free(jPrec); free(iPrec); free(x0); free(*x); free(residue);
+      return EXIT_FAILURE;
+    }
+
+      // correction
+
+    double *correction = malloc(problemSize * sizeof(double)); /* memory
+    allocation for the corretcion array d_m */
+
+    if (correction == NULL){
+      printf("ERROR : not enough memory to create correction array\n");
+      free(prec); free(jPrec); free(iPrec); free(x0); free(*x); free(residue);
+      return EXIT_FAILURE;
+    }
+
+    // Iteration loop
+
+    int iter = 0; // number of iteration
+
+    while(iter <= maxIterations &&
+      normVector(problemSize, residue) > minResidue){
+        /* loops as long as the residue is greater than minResidue and number of
+        iteration is smaller than maxIterations */
+
+        // computing correction
+
+        if(matrixVectorMultCSR(problemSize, prec, jPrec, iPrec, residue,
+            &correction)){
+          printf("ERROR : could not compute correction\n");
+          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
+          free(residue); free(correction);
+          return EXIT_FAILURE;
+        }
+
+        // adding the correction
+
+        if(vectorAddition(problemSize, x0, correction, x)){
+          printf("ERROR : could not add correction\n");
+          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
+          free(residue); free(correction);
+          return EXIT_FAILURE;
+        }
+
+        // computing new residue
+
+        if (getResidue(problemSize, b, a, ja, ia, *x, &residue)){
+          printf("ERROR : could not compute the residue\n");
+          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
+          free(residue); free(correction);
+          return EXIT_FAILURE;
+        }
+
+        // making x_{m+1} become x_m
+
+        for (int i = 0; i < problemSize; i++){
+          // iterating through the solutions
+          x0[i] = (*x)[i];
+        }
+
+        // incrementing iteration
+
+        iter ++;
+      }
+
+      printf("Number of iterations required to converge : %d\n\n", iter - 1);
+
     return EXIT_SUCCESS;
   }

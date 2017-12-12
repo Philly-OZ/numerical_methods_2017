@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 
     // variables declaration
 
-    int m = 4; // number of points in the y direction
+    int m = 10; // number of points in the y direction
     double L = 0.2; // size of the square membrane
     double step = L / (m - 1); // length of the discretization step
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
@@ -56,7 +56,7 @@ int main(int argc, char **argv){
       return EXIT_FAILURE;
     }
     double timeAfterProblem = timer(); // time when the problem is generated
-    printf("Time taken to generate the problem : %f seconds\n",
+    printf("Time taken to generate the problem : %f seconds\n\n",
   timeAfterProblem - timeBeforeProblem);
 
     if (DEBUG_A_MATRIX) {
@@ -82,7 +82,8 @@ int main(int argc, char **argv){
       longer durations */
       if (umfSolve(problemSize, a, ja, ia, T, b)){
         printf("ERROR : UMF Pack solving failed\n");
-        free(T); // Realeasing memory
+        free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
+        /* Realeasing memory */
         return EXIT_FAILURE;
       }
       time_t timeAfterUmfSolve = time(0);
@@ -102,7 +103,8 @@ int main(int argc, char **argv){
         // if plot solution mode is enabled
         if (plot(m, step, T, dirichletCond)) {
           printf("ERROR : could not plot the solution\n");
-          free(T); // Realeasing memory
+          free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
+          /* Realeasing memory */
           return EXIT_FAILURE;
         }
         printf("The result is saved in graphics directory\n\n");
@@ -113,14 +115,45 @@ int main(int argc, char **argv){
     if (SGS_SOLVE){
       // if the Symmetric Gauss Seidel solving mode is enabled
       printf("Solving the problem using Symmetric Gauss Seidel...\n\n");
-      double *T = malloc(problemSize * sizeof(double)); /* vector containing the
-      solution that will be solved using SGS */
+      double *T; // memory allocation for solution vector
+      time_t timeBeforeSGSSolve = time(0); /* time is used here instead of
+      timer() because since timer() is based on CPU clock time, it is not
+      suitable for times over a second. time() is less accurate but better for
+      longer durations */
       if (sgsSolve(a, ia, ja, &T, b, 1e-3, 1000, m, problemSize, PREC_DEBUG)){
         printf("ERROR : SGS failed\n");
-        free(T); // Realeasing memory
+        free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
+        /* Realeasing memory */
         return EXIT_FAILURE;
       }
+      time_t timeAfterSGSSolve = time(0);
+      printf("Time taken to solve the problem using SGS iterative"
+      " method : %f seconds\n",
+        (double) timeAfterSGSSolve - timeBeforeSGSSolve );
+        if (PRINT_SOLUTION){
+          printf("Printing the solution obtained with SGS iterative "
+          "method\n\n");
+          // if print solution mode is enabled
+          for (int i = 0; i < problemSize; i++){
+            // iterating through the solution vector
+            printf("%f\n", T[i]);
+          }
+          printf("\n");
+        }
+        if (PLOT_SOLUTION){
+          printf("Saving the plot of the solution obtained with SGS iterative"
+          "method\n");
+          // if plot solution mode is enabled
+          if (plot(m, step, T, dirichletCond)) {
+            printf("ERROR : could not plot the solution\n");
+            free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
+            /* Realeasing memory */
+            return EXIT_FAILURE;
+          }
+          printf("The result is saved in graphics directory\n\n");
+        }
       free(T); // Realeasing memory
+
     }
 
     printf("Program ending...\n\n");

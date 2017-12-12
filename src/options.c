@@ -67,7 +67,7 @@ void printAArrays(double *a, int *ja, int *ia, int problemSize){
   printf("\n\n------------\n\n");
 }
 
-void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, \
+void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, 
   int problemSize){
   /* prints the values contained the arrays corresponding to A matrix and the
   independent term b array */
@@ -180,8 +180,8 @@ void printInvSGSArrays(double *invLa, double *invUa, int *invIla, int *invIua,
 void printPrecSGSArrays(double *prec, int *jPrec, int *iPrec, int problemSize){
   /* prints the values contained in the arrays representing the
   preconditionner for SGS solve */
-  printf("Printing the CSR arrays corresponding to the preconditionning \
-    matrix\n\n");
+  printf("Printing the CSR arrays corresponding to the preconditionning "
+    "matrix\n\n");
   printf("prec and jPrec arrays :\n");
   printf("-----------------------\n");
   for (int i = 0; i < iPrec[problemSize]; i++){
