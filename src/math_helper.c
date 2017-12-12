@@ -46,7 +46,7 @@ double dirichletCondValue(double L, double y){
 
 int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 	double **la, int **ila, int **jla, double **ua, int **iua, int **jua,
-	double **da){
+	double **da, int **ida, int **jda){
 	/* this funtions breaks the A matrix into LA, DA, UA so that
 	A = LA + UA - DA.
 	LA :  lower triangular part of A
@@ -87,14 +87,17 @@ int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 
 	*da = malloc(problemSize * sizeof(double)); /* allocation of memory for the
 	da array corresponding to DA matrix */
+	*jda = malloc(problemSize * sizeof(int)); /* allocation of memory for the jda
+	array corresponding to the DA matrix */
+	*ida = malloc((problemSize + 1) * sizeof(int)); /* allocation of memory of the
+	ida array corresponding to the DA matrix */
 
 	// checks whether the allocation was successful, returns an error if not
 
 	if (*la == NULL || *jla == NULL || *ila == NULL || *ua == NULL ||
-		*jua == NULL || *iua == NULL ){
-			printf("\n ERROR : not enough memory to generate preconditionning\n\n");
-			free(la); free(jla); free(ila); free(ua); free(jua); free(iua); free(da);
-			// freeing memory
+		*jua == NULL || *iua == NULL || *da == NULL || *jda == NULL ||
+		*ida == NULL){
+			printf("\n ERROR : not enough memory to split the matrix\n\n");
 			return EXIT_FAILURE;
 		}
 
@@ -124,6 +127,8 @@ int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 				(*jua)[nnzUA] = ja[j];
 				nnzUA ++;
 				(*da)[i] = a[j];
+				(*jda)[i] = i;
+				(*ida)[i] = i;
 			} else if (ja[j] > i){
 				// strictly upper triangular part of matrix A
 				(*ua)[nnzUA] = a[j];
@@ -134,6 +139,7 @@ int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 	}
 	(*ila)[problemSize] = nnzLA; // saving of nnz of LA
 	(*iua)[problemSize] = nnzUA; // saving of nnz of UA
+	(*ida)[problemSize] = problemSize; // saving of nnz of DA
 	return EXIT_SUCCESS;
 }
 
@@ -305,81 +311,6 @@ double getIJElementCSR(int i, int j, double *a, int *ja, int *ia){
 	}
 	return 0.0;
 }
-
-int makePreconditionner(int problemSize, double *da, double *invLa,
-	double *invUa, int *invJla, int *invJua, int *invIla, int *invIua,
-	double **prec, int **jPrec, int **iPrec){
-		/* this funtion computes the product of the matrixes LA^-1, UA^-1 and DA to
-		obtain the preconditionning B^-1 = UA^-1 * DA * LA^-1. It stores the result
-		in CSR format */
-
-		double *tempPrec = malloc(square(problemSize) * sizeof(double));
-		/* temporary array in which every values of B^-1 will be stored
-		(even zeros) */
-		if(tempPrec == NULL){
-			printf("ERROR : not enough memory to generate preconditionning matrix\n");
-			return EXIT_FAILURE;
-		}
-
-		// Computing the product of the matrixes
-
-		int nnzPrec = 0; // number of non zero elements of the preconditionner
-		for (int i = 0; i < problemSize; i++){
-			// iterating through the lines of B^-1
-			for (int j = 0; j < problemSize; j++){
-				// iterating through the elements of ith line of B^-1
-				double sum = 0; // value that will be saved as B^-1[i,j]
-				for (int k = 0; k < problemSize; k++){
-					/* iterating through the ith line of UA^-1, the jth column of LA^-1
-					and DA to compute the product */
-					sum += getIJElementCSR(i, k, invUa, invJua, invIua) *
-						getIJElementCSR(k, j, invLa, invJla, invIla) * da[k];
-				}
-				if (sum != 0){
-					nnzPrec ++;
-				}
-				tempPrec[i * problemSize + j] = sum; /* saving the computed value in the
-				temporary array */
-			}
-		}
-
-		/* Formatting the result to CSR */
-
-		// Memory allocations
-
-		*prec = malloc(nnzPrec * sizeof(double));
-		*jPrec = malloc(nnzPrec * sizeof(double));
-		*iPrec = malloc((problemSize + 1) * sizeof(double)); /* allocation of memory
-		for the array in which B^-1 will be stored */
-
-		if (*prec == NULL || *jPrec == NULL || *iPrec == NULL){
-			printf("ERROR :  not enough memory to store preconditionner\n");
-			free(tempPrec);
-			return EXIT_FAILURE;
-		}
-
-		// Filling the arrays
-
-		nnzPrec = 0; // back to 0, it will be used to fill in the arrays
-
-		for (int i = 0; i < problemSize; i++){
-			//iterating through the lines of tempPrec
-			(*iPrec)[i] = nnzPrec;
-			for (int j = 0; j < problemSize; j++){
-				// iterating through the elements of the ith line of tempPrec
-				if (tempPrec[i * problemSize + j] != 0.0){
-					// non zero element, needs to be saved in the arrays
-					(*prec)[nnzPrec] = tempPrec[i * problemSize + j];
-					(*jPrec)[nnzPrec] = j;
-					nnzPrec++;
-				}
-			}
-		}
-
-		(*iPrec)[problemSize] = nnzPrec; //saving of the number of non zero elements
-
-		return EXIT_SUCCESS;
-	}
 
 int matrixVectorMultCSR(int problemSize, double *a, int *ja, int *ia,
 	double *vector, double **newVector){

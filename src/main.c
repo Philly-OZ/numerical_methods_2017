@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 
     // variables declaration
 
-    int m = 10; // number of points in the y direction
+    int m = 50; // number of points in the y direction
     double L = 0.2; // size of the square membrane
     double step = L / (m - 1); // length of the discretization step
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
@@ -120,7 +120,7 @@ int main(int argc, char **argv){
       timer() because since timer() is based on CPU clock time, it is not
       suitable for times over a second. time() is less accurate but better for
       longer durations */
-      if (sgsSolve(a, ia, ja, &T, b, 1e-3, 1000, m, problemSize, PREC_DEBUG)){
+      if (sgsSolve(a, ia, ja, &T, b, 1e-3, 1e4, m, problemSize, PREC_DEBUG)){
         printf("ERROR : SGS failed\n");
         free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
         /* Realeasing memory */

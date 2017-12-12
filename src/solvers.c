@@ -38,11 +38,11 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     // First, generating U, D and L
 
     double *la, *ua, *da;
-    int *ila, *jla, *iua, *jua; /* arrays that will be filled by the U, L and D
-    in CSR format */
+    int *ila, *jla, *iua, *jua, *ida, *jda;  /* arrays that will be filled by
+    the U, L and D in CSR format */
 
     if(splitAMatrix(m, problemSize, a, ia, ja, &la, &ila, &jla, &ua, &iua, &jua,
-    &da)){
+    &da, &ida, &jda)){
       printf("ERROR : Splitting matrix failed.\n");
       return EXIT_FAILURE;
     }
@@ -52,7 +52,8 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("DEBUGGING : preconditionning for SGS : \n");
       printf("Printing the splitting of matrix A\n");
       printf("Printing the arrays...\n\n");
-      printSplitSGSArrays(la, ua, ila, iua, jla, jua, da, problemSize);
+      printSplitSGSArrays(la, ua, ila, iua, jla, jua, da, ida, jda,
+        problemSize);
     }
 
     // Inversing U and L
@@ -65,7 +66,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila, LOW)){
       printf("ERROR : inversing of LA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invJla); free(invIla);
+      free(invLa); free(invJla); free(invIla); free(ida); free(jda);
       return EXIT_FAILURE;
     }
 
@@ -74,7 +75,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("ERROR : inversing of UA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
       free(invLa); free(invUa); free(invJla); free(invIla); free(invJua);
-      free(invIua);
+      free(invIua); free(ida); free(jda);
       return EXIT_FAILURE;
     }
 
@@ -89,35 +90,6 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
         problemSize);
     }
 
-    // Generating preconditionner
-
-    double *prec;
-    int *jPrec, *iPrec; /* arrays that will be filled by the matrix B^-1 in
-    CSR format */
-
-    if (makePreconditionner(problemSize, da, invLa, invUa, invJla, invJua,
-      invIla, invIua, &prec, &jPrec, &iPrec)){
-        printf("ERROR : could not calcultate preconditionner\n");
-        free(da); free(invLa); free(invUa); free(invJla); free(invJua);
-        free(invIla); free(invIua);
-        return EXIT_FAILURE;
-    }
-
-    free(da); free(invLa); free(invUa); free(invJla); free(invJua);
-    free(invIla); free(invIua); /* freeing memory, only preconditionner is
-    needed */
-
-    if (PREC_DEBUG){
-      // code is in preconditionner debugging mode for SGS solving
-      printf("DEBUGGING : computation of preconditionner for SGS\n");
-      printf("Printing the arrays...\n\n");
-      printPrecSGSArrays(prec, jPrec, iPrec, problemSize);
-    }
-
-    /* Starting the iterative method */
-
-    // initialising the variables
-
       // solution arrays
 
     double *x0 = malloc(problemSize * sizeof(double));
@@ -126,7 +98,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     if (x0 == NULL || *x == NULL){
       printf("ERROR : not enough to initialise the solutions arrays\n");
-      free(prec); free(jPrec); free(iPrec);
+      //free(prec); free(jPrec); free(iPrec);
       return EXIT_FAILURE;
     }
 
@@ -143,13 +115,13 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     if (residue == NULL){
       printf("ERROR : not enough memory to initialise the residue array\n");
-      free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
+      free(x0); free(*x);
       return EXIT_FAILURE;
     }
 
     if (getResidue(problemSize, b, a, ja, ia, x0, &residue)){
       printf("ERROR : could not compute the initial residue\n");
-      free(prec); free(jPrec); free(iPrec); free(x0); free(*x); free(residue);
+      free(x0); free(*x); free(residue);
       return EXIT_FAILURE;
     }
 
@@ -160,7 +132,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     if (correction == NULL){
       printf("ERROR : not enough memory to create correction array\n");
-      free(prec); free(jPrec); free(iPrec); free(x0); free(*x); free(residue);
+      free(x0); free(*x); free(residue);
       return EXIT_FAILURE;
     }
 
@@ -175,11 +147,24 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
         // computing correction
 
-        if(matrixVectorMultCSR(problemSize, prec, jPrec, iPrec, residue,
+        if(matrixVectorMultCSR(problemSize, invLa, invJla, invIla, residue,
             &correction)){
-          printf("ERROR : could not compute correction\n");
-          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
-          free(residue); free(correction);
+          printf("ERROR : could not compute correction (LA^-1)\n");
+          free(x0); free(*x); free(residue); free(correction);
+          return EXIT_FAILURE;
+        }
+
+        if(matrixVectorMultCSR(problemSize, da, jda, ida, residue,
+            &correction)){
+          printf("ERROR : could not compute correction (DA)\n");
+          free(x0); free(*x); free(residue); free(correction);
+          return EXIT_FAILURE;
+        }
+
+        if(matrixVectorMultCSR(problemSize, invUa, invJua, invIua, residue,
+            &correction)){
+          printf("ERROR : could not compute correction (UA^-1)\n");
+          free(x0); free(*x); free(residue); free(correction);
           return EXIT_FAILURE;
         }
 
@@ -187,8 +172,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
         if(vectorAddition(problemSize, x0, correction, x)){
           printf("ERROR : could not add correction\n");
-          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
-          free(residue); free(correction);
+          free(x0); free(*x); free(residue); free(correction);
           return EXIT_FAILURE;
         }
 
@@ -196,8 +180,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
         if (getResidue(problemSize, b, a, ja, ia, *x, &residue)){
           printf("ERROR : could not compute the residue\n");
-          free(prec); free(jPrec); free(iPrec); free(x0); free(*x);
-          free(residue); free(correction);
+          free(x0); free(*x); free(residue); free(correction);
           return EXIT_FAILURE;
         }
 
@@ -213,7 +196,12 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
         iter ++;
       }
 
-      printf("Number of iterations required to converge : %d\n\n", iter - 1);
+      printf("Number of iterations required to converge : %d\n", iter - 1);
+      printf("Norm of last residue : %f\n\n", normVector(problemSize, residue));
+
+      free(residue); free(x0); free(invLa); free(invUa); free(da); free(invJla);
+      free(invJua); free(jda); free(invIla); free(invIua); free(ida);
+      free(correction); // freeing memory
 
     return EXIT_SUCCESS;
   }

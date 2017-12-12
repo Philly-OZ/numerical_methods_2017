@@ -67,7 +67,7 @@ void printAArrays(double *a, int *ja, int *ia, int problemSize){
   printf("\n\n------------\n\n");
 }
 
-void printLinearSystemArrays(double *a, int *ja, int *ia, double *b, 
+void printLinearSystemArrays(double *a, int *ja, int *ia, double *b,
   int problemSize){
   /* prints the values contained the arrays corresponding to A matrix and the
   independent term b array */
@@ -84,7 +84,7 @@ void printLinearSystemArrays(double *a, int *ja, int *ia, double *b,
 }
 
 void printSplitSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
-  int *jua, double *da, int problemSize){
+  int *jua, double *da, int *ida, int *jda, int problemSize){
     /* prints the values contained in the arrays representing L, U and D
     matrixes used in SGS preconditionning */
     int nnzLA = ila[problemSize]; // number of nnz in the L matrix
@@ -120,16 +120,23 @@ void printSplitSGSArrays(double *la, double *ua, int *ila, int *iua, int *jla,
     printf("\n\n------------\n\n");
 
     printf("Printing the array corresponding to matrix D \n\n");
-    printf("da array : \n");
-    printf("-----------\n\n");
+    printf("da and jda arrays : \n");
+    printf("-------------------\n\n");
     for (int i = 0; i < problemSize; i++){
       // iterating through da array
-      printf("da[%d,%d] = %f\n", i, i, da[i]);
+      printf("da[%d] = %f, jda[%d] = %d\n", i, da[i], i, jda[i]);
+    }
+    printf("\n\nida array : \n");
+    printf("------------\n\n");
+    for (int i = 0; i < problemSize + 1; i++){
+      // iterating though elements of ida array
+      printf("ida[%d] = %d\n", i, ida[i]);
     }
     printf("\n\n------------\n\n");
 
     printf("Number of nnz elements : \n");
-    printf("LA : %d, UA : %d\n\n", ila[problemSize], iua[problemSize]);
+    printf("LA : %d, UA : %d, DA : %d\n\n", ila[problemSize], iua[problemSize],
+      ida[problemSize]);
 
   }
 
