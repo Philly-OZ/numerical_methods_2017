@@ -58,3 +58,39 @@ int plot(int m, double step, double *T, double *dirichletCond){
 
   return EXIT_SUCCESS;
 }
+
+int saveResidue(FILE *data, int iter, double residue){
+  // this function saves the norm of the residue at the iteration number iter
+  if(data == NULL){
+    printf("ERROR : could not save the residue\n");
+    return EXIT_FAILURE;
+  }
+  fprintf(data, "%d, %f\n",iter, residue); // saving of the data
+  return EXIT_SUCCESS;
+}
+
+int plotResidue(char *title, char *path){
+  /* this functions plots the residue as a function of iteration with the data
+  temporarily stored in residue.txt */
+  FILE *gnu = popen("gnuplot -persist", "w"); // opening gnuplot file
+
+  if (gnu == NULL){
+    printf("ERROR : could not display the result\n");
+    return EXIT_FAILURE;
+  }
+
+  /* Formatting the chart */
+
+  fprintf(gnu, "set term png font '/Library/Fonts/Arial.ttf' 14\n");
+  fprintf(gnu, "set output 'residue%s.png'\n", path);
+  fprintf(gnu, "set title 'Residue norm in function of the iteration number'\n");
+  fprintf(gnu, "set xlabel 'Iteration number'\n");
+  fprintf(gnu, "set ylabel 'Residue norm'\n");
+  fprintf(gnu, "set logscale y 10\n");
+  fprintf(gnu, "set style line 1 lt 2 lc rgb 'red' lw 3\n");
+  fprintf(gnu, "plot 'residue%s.txt' using 1:2 with lines ls 1 title '%s'\n",
+    path, title);
+
+  pclose(gnu); // closing the file
+  return EXIT_SUCCESS;
+ }

@@ -18,3 +18,5 @@ int getResidue(int, double *, double *, int *, int *, double *, double **);
 double normVector(int , double *);
 int matrixVectorMultCSR(int, double *, int *, int *, double *, double **);
 int vectorAddition(int, double *, double *, double **);
+int saveResidue(FILE *, int, double);
+int plotResidue(char *, char *);

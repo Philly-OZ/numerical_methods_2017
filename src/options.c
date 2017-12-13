@@ -8,7 +8,7 @@ execution of the code */
 
 void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM,
   int *UMF_SOLVE, int *PRINT_SOLUTION, int *PLOT_SOLUTION, int *SGS_SOLVE,
-  int *PREC_DEBUG, int argc, char **argv){
+  int *PREC_DEBUG, int *NORM_RESIDUE, int argc, char **argv){
   // generates the boolean values corresponding to the selected options
   *DEBUG_A_MATRIX = 0;
   *DEBUG_LINEAR_SYSTEM = 0;
@@ -17,6 +17,7 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM,
   *PLOT_SOLUTION = 0;
   *SGS_SOLVE = 0;
   *PREC_DEBUG = 0;
+  *NORM_RESIDUE = 0;
   for (int i = 1; i < argc; i++){
     // iterating through every passed arguments
     if (strcmp(argv[i], "-a") == 0){
@@ -40,6 +41,9 @@ void generateOptions(int *DEBUG_A_MATRIX, int *DEBUG_LINEAR_SYSTEM,
     } else if (strcmp(argv[i], "-sgs-prec-debug") == 0){
       // if in debugging preconditionning for SGS mode
       *PREC_DEBUG = 1;
+    } else if (strcmp(argv[i], "-plot-residue") == 0){
+      // if in plot residue mode
+      *NORM_RESIDUE = 1;
     }
   }
 }

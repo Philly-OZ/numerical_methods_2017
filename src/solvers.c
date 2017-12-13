@@ -18,7 +18,8 @@ int umfSolve(int problemSize, double *a, int *ja, int *ia, double *x,
   }
 
 int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
-  double minResidue, int maxIterations, int m, int problemSize, int PREC_DEBUG){
+  double minResidue, int maxIterations, int m, int problemSize, int PREC_DEBUG,
+  int NORM_RESIDUE){
     /* this function solves Ax=b iteratively using Symmetric Gauss Seidel
     preconditionning.
     a, ia, ja : arrays containing the A matrix in CSR format
@@ -30,8 +31,10 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     loops if the algorithm diverges)
     m : discretisation of the problem
     problemSize : number of unknowns
-    PREC_DEBUG : binary variable indicating if code is in debug about the
-    preconditionning */
+    PREC_DEBUG : boolean variable indicating if code is in debug about the
+    preconditionning
+    NORM_RESIDUE : boolean variable indicating whether the code needs to plot
+    the residue as a function of iteration   */
 
     // Generating preconditionner B^-1 = U^-1 D L^-1
 
@@ -64,15 +67,15 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     int LOW = 0; // this is a lower triangular matrix
     if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila, LOW)){
-      printf("ERROR : inversing of LA failed.\n");
+      printf("ERROR : inversion of LA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invJla); free(invIla); free(ida); free(jda);
+      free(ida); free(jda);
       return EXIT_FAILURE;
     }
 
     int UP = 1; // this is a upper triangular matrix
     if(inverseMatrix(problemSize, &invUa, &invJua, &invIua, ua, jua, iua, UP)){
-      printf("ERROR : inversing of UA failed.\n");
+      printf("ERROR : inversion of UA failed.\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
       free(invLa); free(invUa); free(invJla); free(invIla); free(invJua);
       free(invIua); free(ida); free(jda);
@@ -139,11 +142,22 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     // Iteration loop
 
     int iter = 0; // number of iteration
+    FILE *data;
+    if (NORM_RESIDUE) {
+      data = fopen("residueSGS.txt", "w"); /* file in which the data is
+      temporary stored */
+    }
 
     while(iter <= maxIterations &&
       normVector(problemSize, residue) > minResidue){
         /* loops as long as the residue is greater than minResidue and number of
         iteration is smaller than maxIterations */
+
+        // saving the values of the residue and the iteration if required
+
+        if(NORM_RESIDUE){
+          saveResidue(data, iter, normVector(problemSize, residue));
+        }
 
         // computing correction
 
@@ -198,6 +212,18 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
       printf("Number of iterations required to converge : %d\n", iter - 1);
       printf("Norm of last residue : %f\n\n", normVector(problemSize, residue));
+
+      if(NORM_RESIDUE){
+        printf("Saving the plot of the solution obtained with SGS iterative"
+        " method...\n");
+        fclose(data); // closing the file
+        plotResidue("SGS iterative method", "SGS");
+        printf("The result is saved in graphics directory\n\n");
+
+        system("rm residueSGS.txt"); // removing the temporary data file
+        system("mv residueSGS.png ./graphics"); /* storing the png in the
+        graphics folder */
+      }
 
       free(residue); free(x0); free(invLa); free(invUa); free(da); free(invJla);
       free(invJua); free(jda); free(invIla); free(invIua); free(ida);

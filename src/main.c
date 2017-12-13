@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv){
 
-  if (argc <= 8){
+  if (argc <= 9){
 
     // correct number of arguments
 
@@ -27,12 +27,31 @@ int main(int argc, char **argv){
     the linear problem using the symmetric Gauss-Seidel algorithm */
     int PREC_DEBUG; /* boolean variable indicating whether the code is in debug
     mode for the preconditionning for the SGS solving */
+    int NORM_RESIDUE; /* booelan variable indicating whether the code needs to
+    plot the residue as a function of the number of iteration for iterative
+    methods */
     generateOptions(&DEBUG_A_MATRIX, &DEBUG_LINEAR_SYSTEM, &UMF_SOLVE,
-      &PRINT_SOLUTION, &PLOT_SOLUTION, &SGS_SOLVE, &PREC_DEBUG, argc, argv);
+      &PRINT_SOLUTION, &PLOT_SOLUTION, &SGS_SOLVE, &PREC_DEBUG, &NORM_RESIDUE,
+      argc, argv);
+
+    // Program starting
+
+    printf("\n~~~~~~~~~~~~~~~~~~~\n");
+    printf("PROGRAM STARTING...\n");
+    printf("~~~~~~~~~~~~~~~~~~~\n\n");
+
+    // parametric number of discretised points
+
+    int m; // number of points in the y direction, input from the user
+    printf("Enter m (number of points in the y direction) : ");
+    scanf("%d", &m); // saving the value of m  in the variable
+    printf("This input will be modified to the closest bigger suitable"
+      " value\n\n");
+    int maxDepth = makeSuitableM(&m); /* corrects m to a value suitable for
+    multi-grid solving and stores the maximum depth */
 
     // variables declaration
 
-    int m = 50; // number of points in the y direction
     double L = 0.2; // size of the square membrane
     double step = L / (m - 1); // length of the discretization step
     int problemSize, *ia, *ja; /* number of unknowns of the problem, arrays that
@@ -42,11 +61,9 @@ int main(int argc, char **argv){
     double *dirichletCond; /* array containing the Dirichlet condition of the
     East edge */
 
-    // Program starting
+    // generating linear problem
 
-    printf("\n~~~~~~~~~~~~~~~~~~~\n");
-    printf("PROGRAM STARTING...\n");
-    printf("~~~~~~~~~~~~~~~~~~~\n\n");
+    printf("Generating linear problem...\n\n");
 
     double timeBeforeProblem = timer(); // time before generating the problem
     if (generate_problem(m, L, step, &problemSize, &ia, &ja, &a, &b,
@@ -58,6 +75,14 @@ int main(int argc, char **argv){
     double timeAfterProblem = timer(); // time when the problem is generated
     printf("Time taken to generate the problem : %f seconds\n\n",
   timeAfterProblem - timeBeforeProblem);
+    printf("Problem features : \n");
+    printf("------------------\n\n");
+    printf("number of points in x direction : %d\n", m - 1);
+    printf("number of points in y direction : %d (=m)\n", m);
+    printf("number of unknowns (and equations) : %d\n", problemSize);
+    printf("number of non zero elements of A : %d\n", ia[problemSize]);
+    printf("step length : %f meters\n", step);
+    printf("--------------------------\n\n");
 
     if (DEBUG_A_MATRIX) {
       // if debug a matrix is enabled
@@ -76,10 +101,8 @@ int main(int argc, char **argv){
       printf("Solving the problem using UMF Pack...\n\n");
       double *T = malloc(problemSize * sizeof(double)); /* vector containing the
       solution computed using UMF Pack */
-      time_t timeBeforeUmfSolve = time(0); /* time is used here instead of
-      timer() because since timer() is based on CPU clock time, it is not
-      suitable for times over a second. time() is less accurate but better for
-      longer durations */
+      time_t timeBeforeUmfSolve = time(0);
+      double timeBeforeUmfSolveMicro = timer();
       if (umfSolve(problemSize, a, ja, ia, T, b)){
         printf("ERROR : UMF Pack solving failed\n");
         free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
@@ -87,8 +110,13 @@ int main(int argc, char **argv){
         return EXIT_FAILURE;
       }
       time_t timeAfterUmfSolve = time(0);
+      double timeAfterUmfSolveMicro = timer();
+      double elapsedTime = timeAfterUmfSolveMicro - timeBeforeUmfSolveMicro;
+      if (elapsedTime > 1){
+        elapsedTime = (double) timeAfterUmfSolve - timeBeforeUmfSolve;
+      }
       printf("Time taken to solve the problem using UMF Pack : %f seconds\n",
-        (double) timeAfterUmfSolve - timeBeforeUmfSolve );
+        elapsedTime );
       if (PRINT_SOLUTION){
         printf("Printing the solution obtained with UMF Pack\n\n");
         // if print solution mode is enabled
@@ -116,23 +144,26 @@ int main(int argc, char **argv){
       // if the Symmetric Gauss Seidel solving mode is enabled
       printf("Solving the problem using Symmetric Gauss Seidel...\n\n");
       double *T; // memory allocation for solution vector
-      time_t timeBeforeSGSSolve = time(0); /* time is used here instead of
-      timer() because since timer() is based on CPU clock time, it is not
-      suitable for times over a second. time() is less accurate but better for
-      longer durations */
-      if (sgsSolve(a, ia, ja, &T, b, 1e-3, 1e4, m, problemSize, PREC_DEBUG)){
+      time_t timeBeforeSGSSolve = time(0);
+      double timeBeforeSGSSolveMicro = timer();
+      if (sgsSolve(a, ia, ja, &T, b, 1e-3, 1e4, m, problemSize, PREC_DEBUG,
+          NORM_RESIDUE)){
         printf("ERROR : SGS failed\n");
         free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
         /* Realeasing memory */
         return EXIT_FAILURE;
       }
       time_t timeAfterSGSSolve = time(0);
+      double timeAfterSGSSolveMicro = timer();
+      double elapsedTime = timeAfterSGSSolveMicro - timeBeforeSGSSolveMicro;
+      if(elapsedTime > 1){
+        elapsedTime = (double) timeAfterSGSSolve - timeBeforeSGSSolve;
+      }
       printf("Time taken to solve the problem using SGS iterative"
-      " method : %f seconds\n",
-        (double) timeAfterSGSSolve - timeBeforeSGSSolve );
+      " method : %f seconds\n\n", elapsedTime);
         if (PRINT_SOLUTION){
-          printf("Printing the solution obtained with SGS iterative "
-          "method\n\n");
+          printf("Printing the solution obtained with SGS iterative"
+          " method\n\n");
           // if print solution mode is enabled
           for (int i = 0; i < problemSize; i++){
             // iterating through the solution vector
@@ -142,7 +173,7 @@ int main(int argc, char **argv){
         }
         if (PLOT_SOLUTION){
           printf("Saving the plot of the solution obtained with SGS iterative"
-          "method\n");
+          " method\n");
           // if plot solution mode is enabled
           if (plot(m, step, T, dirichletCond)) {
             printf("ERROR : could not plot the solution\n");

@@ -5,6 +5,25 @@
 
 #include "math_helper.h"
 
+int makeSuitableM(int *m){
+	/* this funtions modifies m to a correct value of m so that the multi-grid
+	method is usable. m needs to belong to 2^n + 1 so that the corresponding step
+	is always divisible by 2. It returns the value of n.*/
+	int isIncorrect = 1; // boolean value telling whether m is incorrect
+	while(isIncorrect){
+		for (int n = 1; n <= 20; n++){
+			/* checks until 2^20 + 1 = 1048577, so practically much bigger than
+			actual values of m */
+			if(*m == pow(2, n) + 1){
+				// if m is suitable
+				return n;
+			}
+		}
+		(*m)++; // increases m if not suitable
+	}
+	return EXIT_FAILURE;
+}
+
 int factorisation(int problemSize, double *a, int *ja, int *ia, void **Numeric){
   // this factorises a matrix to solve it
 	int statut;
@@ -150,8 +169,8 @@ int lowerTriangularSolver(int problemSize, double *a, int *ja, int *ia,
 		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
 		array */
 		if (*x == NULL){
-			printf("ERROR : not enough memory to inverse the lower triangular \
-			matrix.\n");
+			printf("ERROR : not enough memory to inverse the lower triangular"
+			" matrix.\n");
 			return EXIT_FAILURE;
 		}
 		for (int i = 0; i < problemSize; i++){
@@ -178,8 +197,8 @@ int upperTriangularSolver(int problemSize, double *a, int *ja, int *ia,
 		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
 		array */
 		if (*x == NULL){
-			printf("ERROR : not enough memory to inverse the upper triangular \
-			matrix.\n");
+			printf("ERROR : not enough memory to inverse the upper triangular"
+			" matrix.\n");
 			return EXIT_FAILURE;
 		}
 		for (int i = problemSize - 1; i >= 0; i--){
@@ -211,8 +230,8 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 
 		double *tempInvA = malloc(square(problemSize) * sizeof(double));
 		if (tempInvA == NULL){
-			printf("ERROR : not enough memory for array tempInvA in matrix \
-			inversion\n");
+			printf("ERROR : not enough memory for array tempInvA in matrix"
+			" inversion\n");
 			return EXIT_FAILURE;
 		}
 		/* temporary array in which every inverse values will be stored
@@ -244,16 +263,16 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 			if (UP){
 				// the matrix to inverse is a upper triangular one
 				if (upperTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
-					printf("ERROR : upper triangular matrix solving failed to inverse\
-					matrix\n");
+					printf("ERROR : upper triangular matrix solving failed to inverse"
+					" matrix\n");
 					free(b);
 					return EXIT_FAILURE;
 				}
 			} else {
 				// the matrix to inverse is a lower triangular one
 				if(lowerTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
-					printf("ERROR : lower triangular matrix solving failed to inverse\
-					matrix\n");
+					printf("ERROR : lower triangular matrix solving failed to inverse"
+					" matrix\n");
 					free(b);
 					return EXIT_FAILURE;
 				}
