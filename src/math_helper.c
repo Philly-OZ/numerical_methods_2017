@@ -218,6 +218,11 @@ int upperTriangularSolver(int problemSize, double *a, int *ja, int *ia,
 		return EXIT_SUCCESS;
 	}
 
+int S(int j){
+	// this returns the sum 1+2+3+...+j
+	return j * (j + 1) / 2;
+}
+
 int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 	double *a, int *ja, int *ia, int UP){
 		/* this functions returns the inverse of the matrix A stored in CSR in
@@ -228,7 +233,10 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		UP parameter is a boolean value telling whether the matrix is upper or lower
 		triangular */
 
-		double *tempInvA = malloc(square(problemSize) * sizeof(double));
+		int maxNnzInvA = S(problemSize); /* this is the worst
+		case scenario of filling in of the triangular matrix of dimension
+		problemSize*problemSize */
+		double *tempInvA = malloc(maxNnzInvA * sizeof(double));
 		if (tempInvA == NULL){
 			printf("ERROR : not enough memory for array tempInvA in matrix"
 			" inversion\n");
@@ -240,7 +248,8 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		/* Computing inverse of matrix A */
 
 		int nnzInvA = 0; /* non zero elements of A^-1, this needs to be computed
-		before generating the ctual arrays */
+		before generating the actual arrays */
+		int nnzTempInvA = 0; // non zero elements of the temporary array
 		for (int i = 0; i < problemSize; i++){
 			// computing the columns of A^-1
 			double *b = malloc(problemSize * sizeof(double));
@@ -268,6 +277,16 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 					free(b);
 					return EXIT_FAILURE;
 				}
+				for (int j = 0; j <= i; j++){
+					// iterating through the computed ith column of A^-1
+					tempInvA[nnzTempInvA] = ithColumnInvA[j]; /* storing the jth
+					element of the ith column into the temporary array */
+					nnzTempInvA++; /* increases the number of non zero element of
+					temporary array */
+					if (ithColumnInvA[j] != 0){
+						nnzInvA++; // increases the number of nnz elements
+					}
+				}
 			} else {
 				// the matrix to inverse is a lower triangular one
 				if(lowerTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
@@ -276,16 +295,18 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 					free(b);
 					return EXIT_FAILURE;
 				}
-			}
-
-			for (int j = 0; j < problemSize; j++){
-				// iterating through the computed ith column of A^-1
-				tempInvA[i * problemSize + j] = ithColumnInvA[j]; /* storing the jth
-				element of the ith column into the temporary array */
-				if (ithColumnInvA[j] != 0){
-					nnzInvA++; // increases the number of nnz elements
+				for (int j = i; j < problemSize; j++){
+					// iterating through the computed ith column of A^-1
+					tempInvA[nnzTempInvA] = ithColumnInvA[j]; /* storing the jth
+					element of the ith column into the temporary array */
+					if (ithColumnInvA[j] != 0){
+						nnzInvA++; // increases the number of nnz elements
+						nnzTempInvA++; /* increases the number of non zero element of
+						temporary array */
+					}
 				}
 			}
+
 			free(b); free(ithColumnInvA); // freeing the memory
 		}
 
@@ -302,15 +323,32 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 
 		nnzInvA = 0; // back to zero, this is required to fill the arrays properly
 
-		for (int i = 0; i < problemSize; i++){
-			(*invIa)[i] = nnzInvA;
-			for (int j = 0; j < problemSize; j++){
-				/* iterating through all the elements of tempInvA and filling in the
-				arrays */
-				if (tempInvA[i + j * problemSize] != 0){
-					(*invA)[nnzInvA] = tempInvA[i + j * problemSize];
-					(*invJa)[nnzInvA] = j;
-					nnzInvA++;
+		if (UP){
+			for (int i = 0; i < problemSize; i++){
+				(*invIa)[i] = nnzInvA;
+				for (int j = i; j < problemSize; j++){
+					/* iterating through all the elements of tempInvA and filling in the
+					arrays */
+					if (tempInvA[i + S(j)] != 0){
+						(*invA)[nnzInvA] = tempInvA[i + S(j)];
+						(*invJa)[nnzInvA] = j;
+						nnzInvA++;
+					}
+				}
+			}
+		} else {
+			for (int i = 0; i < problemSize; i++){
+				(*invIa)[i] = nnzInvA;
+				for (int j = 0; j <= i; j++){
+					/* iterating through all the elements of tempInvA and filling in the
+					arrays */
+					int tempIndex = i + S(problemSize - 1) - S(problemSize - 1 - j);
+					/* index of the tempInvA corresponding to i and j */
+					if (tempInvA[tempIndex] != 0){
+						(*invA)[nnzInvA] = tempInvA[tempIndex];
+						(*invJa)[nnzInvA] = j;
+						nnzInvA++;
+					}
 				}
 			}
 		}
@@ -319,17 +357,6 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 
 		return EXIT_SUCCESS;
 	}
-
-double getIJElementCSR(int i, int j, double *a, int *ja, int *ia){
-	// this funtions returns the value A[i,j] of a matrix A stored in CSR format
-	for(int k = ia[i]; k < ia[i + 1]; k++){
-		// iterating through the non zero elements of the ith line of A
-		if (j == ja[k]){
-			return a[k];
-		}
-	}
-	return 0.0;
-}
 
 int matrixVectorMultCSR(int problemSize, double *a, int *ja, int *ia,
 	double *vector, double **newVector){

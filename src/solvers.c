@@ -214,7 +214,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("Norm of last residue : %f\n\n", normVector(problemSize, residue));
 
       if(NORM_RESIDUE){
-        printf("Saving the plot of the solution obtained with SGS iterative"
+        printf("Saving the plot of the residue obtained with SGS iterative"
         " method...\n");
         fclose(data); // closing the file
         plotResidue("SGS iterative method", "SGS");

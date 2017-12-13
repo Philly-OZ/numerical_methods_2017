@@ -127,7 +127,7 @@ int main(int argc, char **argv){
         printf("\n");
       }
       if (PLOT_SOLUTION){
-        printf("Saving the plot of the solution obtained with UMF Pack\n");
+        printf("Saving the plot of the solution obtained with UMF Pack...\n");
         // if plot solution mode is enabled
         if (plot(m, step, T, dirichletCond)) {
           printf("ERROR : could not plot the solution\n");
@@ -173,7 +173,7 @@ int main(int argc, char **argv){
         }
         if (PLOT_SOLUTION){
           printf("Saving the plot of the solution obtained with SGS iterative"
-          " method\n");
+          " method...\n");
           // if plot solution mode is enabled
           if (plot(m, step, T, dirichletCond)) {
             printf("ERROR : could not plot the solution\n");
