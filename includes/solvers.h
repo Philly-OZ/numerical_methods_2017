@@ -7,7 +7,7 @@
 
 int factorisation(int, double *, int *, int *, void **);
 int resolution(int *, int *, double *, double *, double *, void **);
-int splitAMatrix(int, int, double *, int *, int *, double **, int **, int **,
+int fullSplitAMatrix(int, int, double *, int *, int *, double **, int **, int **,
   double **, int **, int **, double **, int **, int **);
 void printSplitSGSArrays(double *, double *, int *, int *, int *, int *,
   double *, int *, int *, int);

@@ -63,7 +63,7 @@ double dirichletCondValue(double L, double y){
 	return exp(sqrt(1+square(y / L)));
 }
 
-int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
+int fullSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 	double **la, int **ila, int **jla, double **ua, int **iua, int **jua,
 	double **da, int **ida, int **jda){
 	/* this funtions breaks the A matrix into LA, DA, UA so that
@@ -159,6 +159,88 @@ int splitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 	(*ila)[problemSize] = nnzLA; // saving of nnz of LA
 	(*iua)[problemSize] = nnzUA; // saving of nnz of UA
 	(*ida)[problemSize] = problemSize; // saving of nnz of DA
+	return EXIT_SUCCESS;
+}
+
+int notDiagonalSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
+	double **la, int **ila, int **jla, double **ua, int **iua, int **jua){
+	/* this funtions does the same thing as the previous one, except that it
+	does not return the arrays corresponding to matrix D. Only the arrays linked
+	to LA and UA are returned */
+
+	/* Initialization of the parameters of the problem */
+
+	int xNumber = m - 1; // number of points in the x direction
+  int yNumber = m; // number of points in the y direction
+	int nnzLA = 3 * problemSize - xNumber - yNumber; /* number of non zero
+	elements of the la array corresponding to LA matrix */
+	int nnzUA = 3 * problemSize - xNumber - yNumber; /* number of non zero
+	elements of the la array corresponding to UA matrix */
+
+	/* Allocation of memory for the CSR arrays corresponding to LA and UA matrix
+	and the array containing DA */
+
+	// LA matrix
+
+	*la = malloc(nnzLA * sizeof(double)); /* allocation of memory for the la array
+	corresponding to the LA matrix */
+	*jla = malloc(nnzLA * sizeof(int)); /* allocation of memory for the jla array
+	corresponding to the LA matrix */
+	*ila = malloc((problemSize + 1) * sizeof(int)); /* allocation of memory of the
+	ila array corresponding to the LA matrix */
+
+	// UA matrix
+
+	*ua = malloc(nnzUA * sizeof(double)); /* allocation of memory for the ua array
+	corresponding to the UA matrix */
+	*jua = malloc(nnzUA * sizeof(int)); /* allocation of memory for the jua array
+	corresponding to the UA matrix */
+	*iua = malloc((problemSize + 1) * sizeof(int)); /* allocation of memory of the
+	iua array corresponding to the UA matrix */
+
+	// checks whether the allocation was successful, returns an error if not
+
+	if (*la == NULL || *jla == NULL || *ila == NULL || *ua == NULL ||
+		*jua == NULL || *iua == NULL){
+			printf("\n ERROR : not enough memory to split the matrix\n\n");
+			return EXIT_FAILURE;
+		}
+
+	// filling in the arrays
+
+	nnzLA = 0;
+	nnzUA = 0; /* the nnz are back to 0, because they will be used and
+		incremented to fill the arrays */
+
+	for (int i = 0; i < problemSize; i++){
+		// iterating through the lines of matrix A
+		(*ila)[i] = nnzLA;
+		(*iua)[i] = nnzUA;
+		for (int j = ia[i]; j < ia[i + 1]; j++){
+			// iterating through the non zero elements of the ith line
+			if (ja[j] < i){
+				// strictly lower triangular part of matrix A
+				(*la)[nnzLA] = a[j];
+				(*jla)[nnzLA] = ja[j];
+				nnzLA ++;
+			} else if (ja[j] == i){
+				// diagonal part of matrix A
+				(*la)[nnzLA] = a[j];
+				(*jla)[nnzLA] = ja[j];
+				nnzLA ++;
+				(*ua)[nnzUA] = a[j];
+				(*jua)[nnzUA] = ja[j];
+				nnzUA ++;
+			} else if (ja[j] > i){
+				// strictly upper triangular part of matrix A
+				(*ua)[nnzUA] = a[j];
+				(*jua)[nnzUA] = ja[j];
+				nnzUA ++;
+			}
+		}
+	}
+	(*ila)[problemSize] = nnzLA; // saving of nnz of LA
+	(*iua)[problemSize] = nnzUA; // saving of nnz of UA
 	return EXIT_SUCCESS;
 }
 
@@ -358,12 +440,15 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		return EXIT_SUCCESS;
 	}
 
-int matrixVectorMultCSR(int problemSize, double *a, int *ja, int *ia,
+int matrixVectorMultCSR(int m, double *a, int *ja, int *ia,
 	double *vector, double **newVector){
-		/* this function computes the product A*vector with A a square matrix and
-		vector a vector of matching dimension */
+		/* this function computes the product A*vector with A a matrix and
+		vector a vector of matching dimensions
+		dim(newVector) = mx1
+		dim(A) = mxn
+		dim(vector) = nx1 */
 
-		for (int i = 0; i < problemSize; i++){
+		for (int i = 0; i < m; i++){
 			// iterating through the lines of A and vector to compute the product
 			double sum = 0; // value of the ith component of the vector
 			for (int j = ia[i]; j < ia[i + 1]; j++){

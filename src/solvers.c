@@ -44,7 +44,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     int *ila, *jla, *iua, *jua, *ida, *jda;  /* arrays that will be filled by
     the U, L and D in CSR format */
 
-    if(splitAMatrix(m, problemSize, a, ia, ja, &la, &ila, &jla, &ua, &iua, &jua,
+    if(fullSplitAMatrix(m, problemSize, a, ia, ja, &la, &ila, &jla, &ua, &iua, &jua,
     &da, &ida, &jda)){
       printf("ERROR : Splitting matrix failed.\n");
       return EXIT_FAILURE;
