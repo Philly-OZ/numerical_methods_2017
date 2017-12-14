@@ -368,13 +368,13 @@ int generateRestriction(int fineProblemSize, int coarseProblemSize,
 
 		// Defining the memory parameter
 
-		int nnz = ia[fineProblemSize]; /* number of non zero elements in P = number
+		int nnz = iProl[fineProblemSize]; /* number of non zero elements in P = number
     of non zero elements in R */
 
 		// Allocating memory
 
 		*rest = malloc(nnz * sizeof(double));
-		*jRest = malloc(nnz * sizeofint);
+		*jRest = malloc(nnz * sizeof(int));
 		*iRest = malloc((coarseProblemSize + 1) * sizeof(int)); /* memory allocation
 		for the array storing the matrix R */
 
@@ -399,6 +399,27 @@ int generateRestriction(int fineProblemSize, int coarseProblemSize,
 
 		/* Filling in the arrays */
 
+    nnz = 0; /* back to zero, this will be required and incremented to fill in
+    the arrays */
 
-
+    for (int j = 0; j < coarseProblemSize; j++){
+      // iterating through the columns of matrix P / the lines of the matrix R
+      (*iRest)[j] = nnz;
+      for (int i = 0; i < fineProblemSize; i++){
+        // iterating through the lines of matrix P / the columns of matrix R
+        for (int k = iProl[i]; k < iProl[i + 1]; k++){
+          // iterating through the non zero elements of the ith line of P
+          if(jProl[k] == j){
+            /* a match is found, saving the value in the arrays and goes to
+            next line */
+            (*rest)[nnz] = 0.25 * prol[k];
+            (*jRest)[nnz] = i;
+            nnz ++;
+            break;
+          }
+        }
+      }
+    }
+    (*iRest)[coarseProblemSize] = nnz; // saving of nnz
+    return EXIT_SUCCESS;
 	}

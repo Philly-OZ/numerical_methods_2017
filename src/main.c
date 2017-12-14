@@ -49,10 +49,6 @@ int main(int argc, char **argv){
       " value\n\n");
     int maxDepth = makeSuitableM(&m); /* corrects m to a value suitable for
     multi-grid solving and stores the maximum depth */
-    if (maxDepth == EXIT_FAILURE){
-      // suitable m generation failed
-      return EXIT_FAILURE;
-    }
 
     // variables declaration
 
@@ -87,6 +83,19 @@ int main(int argc, char **argv){
     printf("number of non zero elements of A : %d\n", ia[problemSize]);
     printf("step length : %f meters\n", step);
     printf("--------------------------\n\n");
+
+    double *prol, *rest;
+    int *jProl, *iProl, *jRest, *iRest;
+
+    if (generateProlongation(5, 3, &prol, &jProl, &iProl)){
+      printf("prolongation failed\n");
+      return EXIT_FAILURE;
+    }
+
+    if (generateRestriction(20, 6, prol, jProl, iProl, &rest, &jRest, &iRest)){
+      printf("restriction failed\n");
+      return EXIT_FAILURE;
+    }
 
     if (DEBUG_A_MATRIX) {
       // if debug a matrix is enabled

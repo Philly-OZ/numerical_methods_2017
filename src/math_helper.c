@@ -116,7 +116,7 @@ int fullSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 
 	if(*la == NULL){
 		printf("ERROR : not enough memory to generate la array\n");
-		return EXIT_FAILURE
+		return EXIT_FAILURE;
 	}
 
 	if (*jla == NULL){
@@ -251,7 +251,7 @@ int notDiagonalSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 
 	if(*la == NULL){
 		printf("ERROR : not enough memory to generate la array\n");
-		return EXIT_FAILURE
+		return EXIT_FAILURE;
 	}
 
 	if (*jla == NULL){
@@ -451,7 +451,7 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				if(lowerTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
 					printf("ERROR : lower triangular matrix solving failed to inverse"
 					" matrix\n");
-					free(b); free(tempInvA);:;lk
+					free(b); free(tempInvA);
 					return EXIT_FAILURE;
 				}
 				for (int j = i; j < problemSize; j++){
