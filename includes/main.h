@@ -7,7 +7,7 @@
 // Function declarations
 
 int makeSuitableM(int *);
-int generate_problem(int, double, double, int *, int **, int **, double **,
+int generateProblem(int, double, double, int *, int **, int **, double **,
 double **, double **);
 void generateOptions(int *, int *, int *, int *, int *, int *, int *, int *,
   int, char **);

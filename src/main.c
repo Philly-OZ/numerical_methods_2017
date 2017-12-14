@@ -66,7 +66,7 @@ int main(int argc, char **argv){
     printf("Generating linear problem...\n\n");
 
     double timeBeforeProblem = timer(); // time before generating the problem
-    if (generate_problem(m, L, step, &problemSize, &ia, &ja, &a, &b,
+    if (generateProblem(m, L, step, &problemSize, &ia, &ja, &a, &b,
       &dirichletCond)){
       /* this will end the program if there was a problem with the creation of
       the arrays */
