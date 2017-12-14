@@ -21,6 +21,7 @@ int makeSuitableM(int *m){
 		}
 		(*m)++; // increases m if not suitable
 	}
+	printf("ERROR : could not find a suitable value of m \n");
 	return EXIT_FAILURE;
 }
 
@@ -113,12 +114,60 @@ int fullSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 
 	// checks whether the allocation was successful, returns an error if not
 
-	if (*la == NULL || *jla == NULL || *ila == NULL || *ua == NULL ||
-		*jua == NULL || *iua == NULL || *da == NULL || *jda == NULL ||
-		*ida == NULL){
-			printf("\n ERROR : not enough memory to split the matrix\n\n");
-			return EXIT_FAILURE;
-		}
+	if(*la == NULL){
+		printf("ERROR : not enough memory to generate la array\n");
+		return EXIT_FAILURE
+	}
+
+	if (*jla == NULL){
+		printf("ERROR : not enough memory to generate jla array\n");
+		free(*la);
+		return EXIT_FAILURE;
+	}
+
+	if (*ila == NULL){
+		printf("ERROR : not enough memory to generate ila array\n");
+		free(*la); free(*jla);
+		return EXIT_FAILURE;
+	}
+
+	if (*ua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila);
+		return EXIT_FAILURE;
+	}
+
+	if (*jua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila); free(*ua);
+		return EXIT_FAILURE;
+	}
+
+	if (*iua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila); free(*ua); free(*jua);
+		return EXIT_FAILURE;
+	}
+
+	if (*da == NULL){
+		printf("ERROR : not enough memory to generate da array\n");
+		free(*la); free(*jla); free(*ila); free(*ua); free(*jua); free(*iua);
+		return EXIT_FAILURE;
+	}
+
+	if (*jda == NULL){
+		printf("ERROR : not enough memory to generate jda array\n");
+		free(*la); free(*jla); free(*ila); free(*ua); free(*jua); free(*iua);
+		free(*da);
+		return EXIT_FAILURE;
+	}
+
+	if (*ida == NULL){
+		printf("ERROR : not enough memory to generate ida array\n");
+		free(*la); free(*jla); free(*ila); free(*ua); free(*jua); free(*iua);
+		free(*da); free(*jda);
+		return EXIT_FAILURE;
+	}
 
 	// filling in the arrays
 
@@ -200,11 +249,40 @@ int notDiagonalSplitAMatrix(int m, int problemSize, double *a, int *ia, int *ja,
 
 	// checks whether the allocation was successful, returns an error if not
 
-	if (*la == NULL || *jla == NULL || *ila == NULL || *ua == NULL ||
-		*jua == NULL || *iua == NULL){
-			printf("\n ERROR : not enough memory to split the matrix\n\n");
-			return EXIT_FAILURE;
-		}
+	if(*la == NULL){
+		printf("ERROR : not enough memory to generate la array\n");
+		return EXIT_FAILURE
+	}
+
+	if (*jla == NULL){
+		printf("ERROR : not enough memory to generate jla array\n");
+		free(*la);
+		return EXIT_FAILURE;
+	}
+
+	if (*ila == NULL){
+		printf("ERROR : not enough memory to generate ila array\n");
+		free(*la); free(*jla);
+		return EXIT_FAILURE;
+	}
+
+	if (*ua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila);
+		return EXIT_FAILURE;
+	}
+
+	if (*jua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila); free(*ua);
+		return EXIT_FAILURE;
+	}
+
+	if (*iua == NULL){
+		printf("ERROR : not enough memory to generate ua array\n");
+		free(*la); free(*jla); free(*ila); free(*ua); free(*jua);
+		return EXIT_FAILURE;
+	}
 
 	// filling in the arrays
 
@@ -251,8 +329,7 @@ int lowerTriangularSolver(int problemSize, double *a, int *ja, int *ia,
 		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
 		array */
 		if (*x == NULL){
-			printf("ERROR : not enough memory to inverse the lower triangular"
-			" matrix.\n");
+			printf("ERROR : not enough memory to generate x array\n");
 			return EXIT_FAILURE;
 		}
 		for (int i = 0; i < problemSize; i++){
@@ -279,8 +356,7 @@ int upperTriangularSolver(int problemSize, double *a, int *ja, int *ia,
 		*x = malloc(problemSize * sizeof(double)); /* memory allocation for solution
 		array */
 		if (*x == NULL){
-			printf("ERROR : not enough memory to inverse the upper triangular"
-			" matrix.\n");
+			printf("ERROR : not enough memory to generate x array\n");
 			return EXIT_FAILURE;
 		}
 		for (int i = problemSize - 1; i >= 0; i--){
@@ -337,6 +413,7 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 			double *b = malloc(problemSize * sizeof(double));
 			if (b == NULL){
 				printf("ERROR : not enough memory for array b_i in matrix inversion\n");
+				free(tempInvA);
 				return EXIT_FAILURE;
 			}
 			for (int j = 0; j < problemSize; j++){
@@ -356,7 +433,7 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				if (upperTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
 					printf("ERROR : upper triangular matrix solving failed to inverse"
 					" matrix\n");
-					free(b);
+					free(b); free(tempInvA);
 					return EXIT_FAILURE;
 				}
 				for (int j = 0; j <= i; j++){
@@ -374,7 +451,7 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 				if(lowerTriangularSolver(problemSize, a, ja, ia, &ithColumnInvA, b)){
 					printf("ERROR : lower triangular matrix solving failed to inverse"
 					" matrix\n");
-					free(b);
+					free(b); free(tempInvA);:;lk
 					return EXIT_FAILURE;
 				}
 				for (int j = i; j < problemSize; j++){
@@ -402,6 +479,25 @@ int inverseMatrix(int problemSize, double **invA, int **invJa, int **invIa,
 		array invJa array of the matrix A^-1 */
 		*invIa = malloc((problemSize + 1) * sizeof(int)); /* allocation of memory
 		of the array invIa array of the matrix A^-1 */
+
+		// Memory check
+
+		if (*invA == NULL){
+			printf("ERROR : not enough memory to generate array invA\n");
+			return EXIT_FAILURE;
+		}
+
+		if (*invJa == NULL){
+			printf("ERROR : not enough memory to generate array invJa\n");
+			free(*invA);
+			return EXIT_FAILURE;
+		}
+
+		if (*invIa == NULL){
+			printf("ERROR : not enough memory to generate array invIa\n");
+			free(*invA); free(*invJa);
+			return EXIT_FAILURE;
+		}
 
 		nnzInvA = 0; // back to zero, this is required to fill the arrays properly
 
@@ -506,6 +602,13 @@ int getResidue(int problemSize, double *b, double *a, int *ja, int *ia,
 		double *product = malloc(problemSize * sizeof(double)); /* array containing
 		the result of the matrix-vector product */
 
+		// Memory check
+
+		if (product == NULL){
+			printf("ERROR : not enough memory to generate product array\n");
+			return EXIT_FAILURE;
+		}
+
 		// Computing A*u_m
 
 		if (matrixVectorMultCSR(problemSize, a, ja, ia, u, &product)){
@@ -520,6 +623,7 @@ int getResidue(int problemSize, double *b, double *a, int *ja, int *ia,
 			free(product);
 			return EXIT_FAILURE;
 		}
+
 		free(product); // freeing memory
 
 		return EXIT_SUCCESS;

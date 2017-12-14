@@ -49,6 +49,10 @@ int main(int argc, char **argv){
       " value\n\n");
     int maxDepth = makeSuitableM(&m); /* corrects m to a value suitable for
     multi-grid solving and stores the maximum depth */
+    if (maxDepth == EXIT_FAILURE){
+      // suitable m generation failed
+      return EXIT_FAILURE;
+    }
 
     // variables declaration
 
@@ -161,28 +165,37 @@ int main(int argc, char **argv){
       }
       printf("Time taken to solve the problem using SGS iterative"
       " method : %f seconds\n\n", elapsedTime);
-        if (PRINT_SOLUTION){
-          printf("Printing the solution obtained with SGS iterative"
-          " method\n\n");
-          // if print solution mode is enabled
-          for (int i = 0; i < problemSize; i++){
-            // iterating through the solution vector
-            printf("%f\n", T[i]);
-          }
-          printf("\n");
+      if (PRINT_SOLUTION){
+        printf("Printing the solution obtained with SGS iterative"
+        " method\n\n");
+        // if print solution mode is enabled
+        for (int i = 0; i < problemSize; i++){
+          // iterating through the solution vector
+          printf("%f\n", T[i]);
         }
-        if (PLOT_SOLUTION){
-          printf("Saving the plot of the solution obtained with SGS iterative"
-          " method...\n");
-          // if plot solution mode is enabled
-          if (plot(m, step, T, dirichletCond)) {
-            printf("ERROR : could not plot the solution\n");
-            free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
-            /* Realeasing memory */
-            return EXIT_FAILURE;
-          }
-          printf("The result is saved in graphics directory\n\n");
+        printf("\n");
+      }
+      if (PLOT_SOLUTION){
+        printf("Saving the plot of the solution obtained with SGS iterative"
+        " method...\n");
+        // if plot solution mode is enabled
+        if (plot(m, step, T, dirichletCond)) {
+          printf("ERROR : could not plot the solution\n");
+          free(T); free(a); free(ja); free(ia); free(b); free(dirichletCond);
+          /* Realeasing memory */
+          return EXIT_FAILURE;
         }
+        printf("The result is saved in graphics directory\n\n");
+      }
+      if (NORM_RESIDUE){
+        printf("Saving the plot of the residue obtained with SGS iterative"
+        " method...\n");
+        plotResidue("SGS iterative method", "SGS");
+        printf("The result is saved in graphics directory\n\n");
+        system("rm residueSGS.txt"); // removing the temporary data file
+        system("mv residueSGS.png ./graphics"); /* storing the png in the
+        graphics folder */
+      }
       free(T); // Realeasing memory
 
     }

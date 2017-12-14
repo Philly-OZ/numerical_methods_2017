@@ -34,9 +34,32 @@ int generateProblem(int m, double L, double step, int *problemSize,
   /* checks whether the allocation of memory was successful, returns an error
   if not */
 
-  if(*ia == NULL || *ja ==  NULL || *a == NULL || *b == NULL ||
-  *dirichletCond == NULL){
-    printf("\n ERROR : not enough memory to generate the problem\n\n");
+  if (*a == NULL){
+    printf("ERROR : not enough memory to generate a array\n");
+    return EXIT_FAILURE;
+  }
+
+  if (*ja == NULL){
+    printf("ERROR : not enough memory to generate ja array\n");
+    free(*a);
+    return EXIT_FAILURE;
+  }
+
+  if (*ia == NULL){
+    printf("ERROR : not enough memory to generate ia array\n");
+    free(*a); free(*ja);
+    return EXIT_FAILURE;
+  }
+
+  if (*b == NULL){
+    printf("ERROR : not enough memory to generate b array\n");
+    free(*a); free(*ja); free(*ia);
+    return EXIT_FAILURE;
+  }
+
+  if (dirichletCond == NULL){
+    printf("ERROR : not enough memory to generate dirichletCond array\n");
+    free(*a); free(*ja); free(*ia); free(*b);
     return EXIT_FAILURE;
   }
 
@@ -234,13 +257,13 @@ int generateProlongation(int mFineGrid, int mCoarseGrid,
 
     if(jProl == NULL){
       printf("ERROR : not enough memory to generate jProl array\n");
-      free(prol);
+      free(*prol);
       return EXIT_FAILURE;
     }
 
     if (iProl == NULL){
       printf("ERROR : not enough memory to generate iProl array\n");
-      free(prol); free(jProl);
+      free(*prol); free(*jProl);
       return EXIT_FAILURE;
     }
 
@@ -332,3 +355,50 @@ int generateProlongation(int mFineGrid, int mCoarseGrid,
     return EXIT_SUCCESS;
 
   }
+
+int generateRestriction(int fineProblemSize, int coarseProblemSize,
+  double *prol, int *jProl, int *iProl, double **rest, int **jRest,
+  int ** iRest){
+		/* this funtions returns the arrays corresponding to the restriction matrix
+    R that will be used for the multi-grid scheme.
+    R = 0.25 * tr(P) with P the prolongation matrix. This function basically
+    computes the transpose of P */
+
+		/* Memory allocation */
+
+		// Defining the memory parameter
+
+		int nnz = ia[fineProblemSize]; /* number of non zero elements in P = number
+    of non zero elements in R */
+
+		// Allocating memory
+
+		*rest = malloc(nnz * sizeof(double));
+		*jRest = malloc(nnz * sizeofint);
+		*iRest = malloc((coarseProblemSize + 1) * sizeof(int)); /* memory allocation
+		for the array storing the matrix R */
+
+		// Allocation check
+
+		if(*rest == NULL){
+			printf("ERROR : not enough memory to generate rest array\n");
+			return EXIT_FAILURE;
+		}
+
+		if(*jRest == NULL){
+			printf("ERROR : not enough memory to generate jRest array\n");
+			free(*rest);
+			return EXIT_FAILURE;
+		}
+
+		if(*iRest == NULL){
+			printf("ERROR : not enough memory to generate iRest array\n");
+			free(*rest); free(*jRest);
+			return EXIT_FAILURE;
+		}
+
+		/* Filling in the arrays */
+
+
+
+	}

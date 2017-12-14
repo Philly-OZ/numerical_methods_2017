@@ -44,8 +44,8 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
     int *ila, *jla, *iua, *jua, *ida, *jda;  /* arrays that will be filled by
     the U, L and D in CSR format */
 
-    if(fullSplitAMatrix(m, problemSize, a, ia, ja, &la, &ila, &jla, &ua, &iua, &jua,
-    &da, &ida, &jda)){
+    if(fullSplitAMatrix(m, problemSize, a, ia, ja, &la, &ila, &jla, &ua, &iua,
+      &jua, &da, &ida, &jda)){
       printf("ERROR : Splitting matrix failed.\n");
       return EXIT_FAILURE;
     }
@@ -67,7 +67,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     int LOW = 0; // this is a lower triangular matrix
     if(inverseMatrix(problemSize, &invLa, &invJla, &invIla, la, jla, ila, LOW)){
-      printf("ERROR : inversion of LA failed.\n");
+      printf("ERROR : inversion of LA failed\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
       free(ida); free(jda);
       return EXIT_FAILURE;
@@ -75,10 +75,9 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
     int UP = 1; // this is a upper triangular matrix
     if(inverseMatrix(problemSize, &invUa, &invJua, &invIua, ua, jua, iua, UP)){
-      printf("ERROR : inversion of UA failed.\n");
+      printf("ERROR : inversion of UA failed\n");
       free(la); free(ua); free(da); free(ila); free(jla); free(iua); free(jua);
-      free(invLa); free(invUa); free(invJla); free(invIla); free(invJua);
-      free(invIua); free(ida); free(jda);
+      free(invLa); free(invJla); free(invIla); free(ida); free(jda);
       return EXIT_FAILURE;
     }
 
@@ -95,15 +94,27 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
 
       // solution arrays
 
+      // Memory allocation
+
     double *x0 = malloc(problemSize * sizeof(double));
     *x = malloc(problemSize * sizeof(double)); /* allocation of memory
     of x_m and x_{m+1} */
 
-    if (x0 == NULL || *x == NULL){
-      printf("ERROR : not enough to initialise the solutions arrays\n");
-      //free(prec); free(jPrec); free(iPrec);
+      // Memory check
+
+
+    if (x0 == NULL){
+      printf("ERROR : not enough to generate array x0\n");
       return EXIT_FAILURE;
     }
+
+    if (*x == NULL){
+      printf("ERROR : not enough to generate array x\n");
+      free(x0);
+      return EXIT_FAILURE;
+    }
+
+      // Initialization of solution vectors
 
     for (int i = 0; i < problemSize; i++){
       // initialising the solution vectors to null vector
@@ -214,15 +225,7 @@ int sgsSolve(double *a, int *ia, int *ja, double **x, double *b,
       printf("Norm of last residue : %f\n\n", normVector(problemSize, residue));
 
       if(NORM_RESIDUE){
-        printf("Saving the plot of the residue obtained with SGS iterative"
-        " method...\n");
         fclose(data); // closing the file
-        plotResidue("SGS iterative method", "SGS");
-        printf("The result is saved in graphics directory\n\n");
-
-        system("rm residueSGS.txt"); // removing the temporary data file
-        system("mv residueSGS.png ./graphics"); /* storing the png in the
-        graphics folder */
       }
 
       free(residue); free(x0); free(invLa); free(invUa); free(da); free(invJla);

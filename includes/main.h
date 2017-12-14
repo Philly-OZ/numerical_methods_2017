@@ -19,3 +19,4 @@ double timer(void);
 time_t time(int);
 int sgsSolve(double *, int *, int *, double **, double *, double, int, int,
    int, int, int);
+int plotResidue(char *, char *);
